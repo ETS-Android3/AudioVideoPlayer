@@ -90,11 +90,17 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                     if (exoPlayer.getPlayWhenReady()) {
                         mediaControllerCompat.getTransportControls().pause();
                         mediaControllerCompat.getTransportControls().play();
+                        exoPlayer.seekTo(0);
                         av.startActivity(playerActivityIntent);
                     } else {
                         av.startService(playerService);
                         mediaControllerCompat.getTransportControls().play();
                         av.startActivity(playerActivityIntent);
+                        if (exoPlayer.getPlayWhenReady()) {
+                            exoPlayer.seekTo(0);
+                        } else {
+                            exoPlayer.seekTo(0);
+                        }
                     }
                 } else {
                     av.startService(playerService);

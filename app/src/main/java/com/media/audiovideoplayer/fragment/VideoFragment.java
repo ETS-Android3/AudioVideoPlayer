@@ -97,9 +97,10 @@ public class VideoFragment extends Fragment {
                 String data = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
                 long duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
                 VideoData videoData = new VideoData(title, videoTitle, data, duration);
-                if (videoData.getTitle().toLowerCase(Locale.ROOT).contains("java")) {
+              /*  if (videoData.getTitle().toLowerCase(Locale.ROOT).contains("java")) {
                     videoDataArrayList.add(videoData);
-                }
+                }*/
+                videoDataArrayList.add(videoData);
             } while (cursor.moveToNext());
         }
         assert cursor != null;

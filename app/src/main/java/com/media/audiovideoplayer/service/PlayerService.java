@@ -1,5 +1,7 @@
 package com.media.audiovideoplayer.service;
 
+import static com.media.audiovideoplayer.activity.PlayerActivity.playerActivity;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,7 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -28,12 +29,11 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -57,7 +57,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
     private String filePath;
     private int index;
     private long duration;
-    private Bitmap notificationIcon;
     public static MediaSessionCompat mediaSession;
     public static MediaControllerCompat mediaControllerCompat;
     private PlaybackStateCompat.Builder playbackStateCompat;
@@ -67,19 +66,15 @@ public class PlayerService extends MediaBrowserServiceCompat {
     private PendingIntent stopIntent;
     private static final String NOTIFICATION_CHANNEL_ID = "AudioVideoPlayer";
     private static final String NOTIFICATION_CHANNEL_NAME = "AudioVideoNotification";
-    private NotificationManager manager;
-    private NotificationCompat.Builder notificationBuilder;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        MediaButtonReceiver.handleIntent(mediaSession, intent);
         if (intent.getAction().equals(AudioVideoConstants.START_FOREGROUND)) {
             sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
             try {
                 startForeground();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         } else if (intent.getAction().equals(AudioVideoConstants.STOP_FOREGROUND)) {
@@ -88,13 +83,15 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 exoPlayer.setPlayWhenReady(false);
                 exoPlayer.seekTo(0);
                 exoPlayer.stop();
-                updatePlaybackState(
+               /* updatePlaybackState(
                         PlaybackStateCompat.STATE_STOPPED,
                         exoPlayer.getCurrentPosition(),
                         false
-                );
+                );*/
                 stopForeground(true);
-                stopSelf();
+                if (playerActivity != null) {
+                    playerActivity.finishAndRemoveTask();
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId);
@@ -155,11 +152,32 @@ public class PlayerService extends MediaBrowserServiceCompat {
         @Override
         public void onPlay() {
             super.onPlay();
+            try {
+                filePath = sharedPreferences.getString("filePath", "def");
+                initiateMedia(filePath);
+                updatePlaybackState(
+                        PlaybackStateCompat.STATE_PLAYING,
+                        exoPlayer.getCurrentPosition(),
+                        true
+                );
+                startForeground();
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+
 
         @Override
         public void onPause() {
             super.onPause();
+            try {
+                isPlaying = false;
+                NotificationManagerCompat.from(getApplicationContext()).notify(1, getNotification());
+                exoPlayer.setPlayWhenReady(false);
+                updatePlaybackState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), true);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -200,7 +218,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     NOTIFICATION_CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_DEFAULT
             );
-            manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             // build notification channel
             manager.createNotificationChannel(chan);
         }
@@ -209,12 +227,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
 
     public Notification getNotification() throws ExecutionException, InterruptedException {
-        notificationIcon = getBitmap(filePath);
+        Bitmap notificationIcon = getBitmap(filePath);
         updateMetadata(title, title, notificationIcon, duration);
         MediaControllerCompat controller = mediaSession.getController();
         MediaMetadataCompat mediaMetadata = controller.getMetadata();
         MediaDescriptionCompat description = mediaMetadata.getDescription();
-        notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(description.getTitle())
                 .setContentText(description.getSubtitle())
                 .setSubText(description.getDescription())
@@ -299,14 +317,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 }
                 break;
             case VIDEO:
-                icon= new GenerateIconForVideo().execute(url).get();
+                icon = new GenerateIconForVideo().execute(url).get();
                 break;
         }
         return icon;
     }
 
     public void initiateMedia(String url) {
-        exoPlayer = ExoPlayerFactory.newSimpleInstance(this);
+        exoPlayer = initiateExoPlayer();
         DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this, "AudioVideoPlayer");
         Uri uri = Uri.parse(url);
         MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
@@ -352,6 +370,10 @@ public class PlayerService extends MediaBrowserServiceCompat {
         });
     }
 
+    private SimpleExoPlayer initiateExoPlayer() {
+        return (exoPlayer == null) ? ExoPlayerFactory.newSimpleInstance(this) : exoPlayer;
+    }
+
     public void updateMetadata(String title, String artist, Bitmap bitmap, Long duration) {
         this.duration = duration;
         sharedPreferences.edit().putLong("duration", duration).apply();
@@ -380,16 +402,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
         @Override
         protected Bitmap doInBackground(String... strings) {
-            Glide.with(getApplicationContext()).asBitmap().load(strings[0]).into(new CustomTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                    videoIcon = resource;
-                }
-
-                @Override
-                public void onLoadCleared(@Nullable Drawable placeholder) {
-                }
-            });
+            try {
+                videoIcon = Glide.with(getApplicationContext()).asBitmap().load(strings[0]).submit().get();
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
             return videoIcon;
         }
 

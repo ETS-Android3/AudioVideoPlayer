@@ -2,6 +2,7 @@ package com.media.audiovideoplayer.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,10 +13,10 @@ import com.media.audiovideoplayer.R;
 import static com.media.audiovideoplayer.service.PlayerService.exoPlayer;
 
 public class PlayerActivity extends AppCompatActivity {
-
     public PlayerView playerView;
     public ImageView audioImageView;
     public PlayerControlView playerControlView;
+    public static Activity playerActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,5 +27,11 @@ public class PlayerActivity extends AppCompatActivity {
         playerControlView=findViewById(R.id.video_controller);
         playerView.setPlayer(exoPlayer);
         playerControlView.setPlayer(exoPlayer);
+        playerActivity=this;
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }
