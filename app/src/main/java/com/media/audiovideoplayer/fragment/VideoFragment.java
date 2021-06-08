@@ -18,7 +18,6 @@ import com.media.audiovideoplayer.adapter.VideoPlayerAdapter;
 import com.media.audiovideoplayer.datamodel.VideoData;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,7 +33,7 @@ public class VideoFragment extends Fragment {
 
     private static RecyclerView videoPlayerRecyclerView;
     private VideoPlayerAdapter videoPlayerAdapter;
-    private ArrayList<VideoData> videoDataArrayList;
+    public static ArrayList<VideoData> videoDataArrayList;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;

@@ -1,12 +1,15 @@
 package com.media.audiovideoplayer.adapter;
 
+import static com.media.audiovideoplayer.service.PlayerService.exoPlayer;
+import static com.media.audiovideoplayer.service.PlayerService.mediaControllerCompat;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,24 +21,26 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.media.audiovideoplayer.R;
+import com.media.audiovideoplayer.activity.PlayerActivity;
+import com.media.audiovideoplayer.constants.AudioVideoConstants;
 import com.media.audiovideoplayer.datamodel.AudioData;
+import com.media.audiovideoplayer.service.PlayerService;
+import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
 public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.AudioHolder> implements SectionIndexer {
 
-    private ArrayList<AudioData> audioData;
-    private Activity av;
-    private Context context;
+    public static ArrayList<AudioData> audioData;
+    private final Activity av;
+    private final Context context;
     private ArrayList<Integer> sectionsList;
 
     public AudioPlayerAdapter(ArrayList<AudioData> audioDataArrayList, Activity activity, Context context) {
-        this.audioData = audioDataArrayList;
+        audioData = audioDataArrayList;
         this.context = context;
         this.av = activity;
     }
@@ -93,10 +98,11 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
 
     class AudioHolder extends RecyclerView.ViewHolder {
 
-        private ImageView audioImageView;
-        private TextView title_text_view;
-        private TextView artist_text_view;
+        private final ImageView audioImageView;
+        private final TextView title_text_view;
+        private final TextView artist_text_view;
         private TextView menu;
+        private SharedPreferences sharedPreferences;
 
         public AudioHolder(@NonNull View itemView) {
             super(itemView);
@@ -104,6 +110,41 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             title_text_view = itemView.findViewById(R.id.music_item_label);
             artist_text_view = itemView.findViewById(R.id.music_item_artist);
             menu = itemView.findViewById(R.id.music_card_menu);
+
+            itemView.setOnClickListener(v -> {
+                sharedPreferences = Preferences.getSharedPreferences(context);
+                Intent playerActivityIntent = new Intent(context, PlayerActivity.class);
+                Intent playerService = new Intent(context, PlayerService.class);
+                playerService.setAction(AudioVideoConstants.START_FOREGROUND);
+                sharedPreferences.edit()
+                        .putInt("index", getAdapterPosition())
+                        .putString("title", audioData.get(getAdapterPosition()).getMusicTitle())
+                        .putString("filePath", audioData.get(getAdapterPosition()).getFileUrl())
+                        .putString("artist", audioData.get(getAdapterPosition()).getArtist())
+                        .putString("source", "AUDIO")
+                        .putLong("duration", audioData.get(getAdapterPosition()).getDuration())
+                        .apply();
+                if (exoPlayer != null) {
+                    if (exoPlayer.getPlayWhenReady()) {
+                        mediaControllerCompat.getTransportControls().pause();
+                        mediaControllerCompat.getTransportControls().play();
+                        exoPlayer.seekTo(0);
+                        av.startActivity(playerActivityIntent);
+                    } else {
+                        av.startService(playerService);
+                        mediaControllerCompat.getTransportControls().play();
+                        av.startActivity(playerActivityIntent);
+                        if (exoPlayer.getPlayWhenReady()) {
+                            exoPlayer.seekTo(0);
+                        } else {
+                            exoPlayer.seekTo(0);
+                        }
+                    }
+                } else {
+                    av.startService(playerService);
+                    av.startActivity(playerActivityIntent);
+                }
+            });
         }
 
         public void bindAudioData(String title, String artist, String fileUrl) {

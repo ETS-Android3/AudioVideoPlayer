@@ -6,6 +6,11 @@ public class AudioData {
     private String musicTitle;
     private String artist;
     private String fileUrl;
+
+    public long getDuration() {
+        return duration;
+    }
+
     private long duration;
 
     public AudioData(int index, String musicTitle, String artist, String fileUrl, long duration) {

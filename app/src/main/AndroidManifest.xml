@@ -19,6 +19,8 @@
         <activity
             android:name=".activity.PlayerActivity"
             android:exported="true"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:screenOrientation="portrait"
             android:launchMode="singleTop"/>
         <activity
             android:name=".activity.MainActivity"

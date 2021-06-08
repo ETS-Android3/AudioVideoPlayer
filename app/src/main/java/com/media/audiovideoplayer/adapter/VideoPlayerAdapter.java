@@ -30,13 +30,13 @@ import java.util.ArrayList;
 public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.VideoHolder> {
 
 
-    private ArrayList<VideoData> videoDataArrayList;
-    private Activity av;
-    private Context context;
+    public static ArrayList<VideoData> videoDataArrayList;
+    private final Activity av;
+    private final Context context;
     private SharedPreferences sharedPreferences;
 
     public VideoPlayerAdapter(ArrayList<VideoData> videoData, Activity activity, Context context) {
-        this.videoDataArrayList = videoData;
+        videoDataArrayList = videoData;
         this.av = activity;
         this.context = context;
 
@@ -64,9 +64,9 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
     }
 
     public class VideoHolder extends RecyclerView.ViewHolder {
-        private TextView textView;
-        private ImageView imageView;
-        private ImageButton share_video;
+        private final TextView textView;
+        private final ImageView imageView;
+        private final ImageButton share_video;
 
         public VideoHolder(@NonNull View itemView) {
             super(itemView);
@@ -82,6 +82,7 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                 sharedPreferences.edit()
                         .putInt("index", getAdapterPosition())
                         .putString("title", videoDataArrayList.get(getAdapterPosition()).getDisplayName())
+                        .putString("artist", videoDataArrayList.get(getAdapterPosition()).getTitle())
                         .putString("filePath", videoDataArrayList.get(getAdapterPosition()).getUrl())
                         .putString("source", "VIDEO")
                         .putLong("duration", videoDataArrayList.get(getAdapterPosition()).getDuration())

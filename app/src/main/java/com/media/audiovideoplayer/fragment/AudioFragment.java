@@ -3,15 +3,14 @@ package com.media.audiovideoplayer.fragment;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
@@ -115,9 +114,10 @@ public class AudioFragment extends Fragment {
                     cursor.getString(1),
                     cursor.getString(3),
                     cursor.getLong(5));
-            if (audioModel.getMusicTitle().toLowerCase(Locale.ROOT).contains("over")) {
-                audioModels.add(audioModel);
-            }
+           /* if (audioModel.getMusicTitle().toLowerCase(Locale.ROOT).contains("over")) {
+
+            }*/
+            audioModels.add(audioModel);
             index++;
         }
         cursor.close();

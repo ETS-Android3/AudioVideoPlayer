@@ -3,9 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable/fullscreen.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/activity_main.xml" value="0.12708333333333333" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/activity_player.xml" value="0.2" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/audio_list.xml" value="0.12708333333333333" />
+        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/exo_controller_layout.xml" value="0.253125" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/fragment_audio.xml" value="0.12708333333333333" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/video_list.xml" value="0.12708333333333333" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/MainActivity/app/src/main/res/drawable-anydpi/share.xml" value="0.1" />

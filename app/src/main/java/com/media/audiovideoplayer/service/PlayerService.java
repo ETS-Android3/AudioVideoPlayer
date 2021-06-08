@@ -1,6 +1,8 @@
 package com.media.audiovideoplayer.service;
 
 import static com.media.audiovideoplayer.activity.PlayerActivity.playerActivity;
+import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.audioData;
+import static com.media.audiovideoplayer.adapter.VideoPlayerAdapter.videoDataArrayList;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -155,17 +157,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
             try {
                 filePath = sharedPreferences.getString("filePath", "def");
                 initiateMedia(filePath);
-                updatePlaybackState(
-                        PlaybackStateCompat.STATE_PLAYING,
-                        exoPlayer.getCurrentPosition(),
-                        true
-                );
+                //updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), true);
                 startForeground();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         }
-
 
         @Override
         public void onPause() {
@@ -183,11 +180,69 @@ public class PlayerService extends MediaBrowserServiceCompat {
         @Override
         public void onSkipToNext() {
             super.onSkipToNext();
+            int currentIndex = sharedPreferences.getInt("index", 0);
+            int size;
+            switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
+                case AUDIO:
+                    size = audioData.size() - 1;
+                    index = currentIndex + 1;
+                    index = (index > size) ? 0 : index;
+                    index = (index < 0) ? size : index;
+                    sharedPreferences.edit()
+                            .putString("title", audioData.get(index).getMusicTitle())
+                            .putString("filePath", audioData.get(index).getFileUrl())
+                            .putLong("duration", audioData.get(index).getDuration())
+                            .putInt("index", index).apply();
+                    break;
+                case VIDEO:
+                    size = videoDataArrayList.size() - 1;
+                    index = currentIndex + 1;
+                    index = (index > size) ? 0 : index;
+                    index = (index < 0) ? size : index;
+                    sharedPreferences.edit()
+                            .putString("title", videoDataArrayList.get(index).getTitle())
+                            .putString("filePath", videoDataArrayList.get(index).getUrl())
+                            .putLong("duration", videoDataArrayList.get(index).getDuration())
+                            .putInt("index", index).apply();
+                    break;
+            }
+            onPause();
+            onPlay();
+            playerActivity.recreate();
         }
 
         @Override
         public void onSkipToPrevious() {
             super.onSkipToPrevious();
+            int currentIndex = sharedPreferences.getInt("index", 0);
+            int size;
+            switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
+                case AUDIO:
+                    size = audioData.size() - 1;
+                    index = currentIndex - 1;
+                    index = (index > size) ? 0 : index;
+                    index = (index < 0) ? size : index;
+                    sharedPreferences.edit()
+                            .putString("title", audioData.get(index).getMusicTitle())
+                            .putString("filePath", audioData.get(index).getFileUrl())
+                            .putLong("duration", audioData.get(index).getDuration())
+                            .putInt("index", index).apply();
+                    break;
+                case VIDEO:
+                    size = videoDataArrayList.size() - 1;
+                    index = currentIndex - 1;
+                    index = (index > size) ? 0 : index;
+                    index = (index < 0) ? size : index;
+                    sharedPreferences.edit()
+                            .putString("title", videoDataArrayList.get(index).getTitle())
+                            .putString("filePath", videoDataArrayList.get(index).getUrl())
+                            .putLong("duration", videoDataArrayList.get(index).getDuration())
+                            .putInt("index", index).apply();
+                    break;
+            }
+            onPause();
+            onPlay();
+            playerActivity.recreate();
         }
 
         @Override
@@ -222,13 +277,13 @@ public class PlayerService extends MediaBrowserServiceCompat {
             // build notification channel
             manager.createNotificationChannel(chan);
         }
+        Bitmap notificationIcon = getBitmap(filePath);
+        updateMetadata(title, title, notificationIcon, duration);
         startForeground(1, getNotification());
     }
 
 
     public Notification getNotification() throws ExecutionException, InterruptedException {
-        Bitmap notificationIcon = getBitmap(filePath);
-        updateMetadata(title, title, notificationIcon, duration);
         MediaControllerCompat controller = mediaSession.getController();
         MediaMetadataCompat mediaMetadata = controller.getMetadata();
         MediaDescriptionCompat description = mediaMetadata.getDescription();
@@ -330,11 +385,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
         MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
         exoPlayer.prepare(mediaSource);
         exoPlayer.setPlayWhenReady(true);
-
         if (exoPlayer.getPlayWhenReady()) {
             isPlaying = true;
         }
-
         exoPlayer.addListener(new Player.EventListener() {
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
