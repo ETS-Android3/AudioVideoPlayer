@@ -10,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
@@ -84,9 +85,7 @@ public class PlayerActivity extends AppCompatActivity {
                 playerView.setVisibility(View.VISIBLE);
                 audioImageView.setVisibility(View.INVISIBLE);
                 fullScreenButton.setVisibility(View.VISIBLE);
-                playerView.setPlayer(exoPlayer);
-                addFunctionalityFullScreen();
-                handleFullScreen();
+                new PlayMedia().execute();
                 break;
         }
     }
@@ -212,4 +211,23 @@ public class PlayerActivity extends AppCompatActivity {
             finish();
         }
     }
+
+    public class PlayMedia extends AsyncTask<Void,Void,Void>
+    {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void unused) {
+            super.onPostExecute(unused);
+            playerView.setPlayer(exoPlayer);
+            addFunctionalityFullScreen();
+            handleFullScreen();
+        }
+    }
+
+
 }
