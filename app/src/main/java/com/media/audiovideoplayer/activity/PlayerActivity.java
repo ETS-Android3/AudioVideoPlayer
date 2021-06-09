@@ -70,12 +70,12 @@ public class PlayerActivity extends AppCompatActivity {
             } else {
                 playPauseButton.setImageResource(R.drawable.play);
             }
-            handleFullScreen();
         }
         switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
             case AUDIO:
                 playerView.setVisibility(View.INVISIBLE);
                 audioImageView.setVisibility(View.VISIBLE);
+                fullScreenButton.setVisibility(View.INVISIBLE);
                 audioFilePath = sharedPreferences.getString("filePath", "def");
                 Bitmap audioIcon = getBitmapImage(audioFilePath);
                 Glide.with(getApplicationContext()).asBitmap().load(audioIcon).transform(new GranularRoundedCorners(15, 15, 15, 15)).into(audioImageView);
@@ -83,8 +83,10 @@ public class PlayerActivity extends AppCompatActivity {
             case VIDEO:
                 playerView.setVisibility(View.VISIBLE);
                 audioImageView.setVisibility(View.INVISIBLE);
+                fullScreenButton.setVisibility(View.VISIBLE);
                 playerView.setPlayer(exoPlayer);
                 addFunctionalityFullScreen();
+                handleFullScreen();
                 break;
         }
     }

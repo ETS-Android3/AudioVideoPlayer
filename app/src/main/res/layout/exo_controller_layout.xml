@@ -35,7 +35,7 @@
             android:layout_height="26dp"
             android:layout_weight="1"
             app:played_color="#ff0000"
-            app:buffered_color="@color/white"
+            app:buffered_color="@android:color/darker_gray"
             app:unplayed_color="@android:color/darker_gray" />
 
         <TextView
