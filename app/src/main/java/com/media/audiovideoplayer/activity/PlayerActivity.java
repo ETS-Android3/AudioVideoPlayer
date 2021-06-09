@@ -8,13 +8,14 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -34,8 +35,10 @@ public class PlayerActivity extends AppCompatActivity {
     public static Activity playerActivity;
     public SharedPreferences sharedPreferences;
     private String audioFilePath;
-    private ImageButton nextButton, prevButton;
+    private ImageButton nextButton, prevButton, playPauseButton;
     private ImageButton fullScreenButton;
+    private LinearLayout playerControl;
+    private Handler handler;
     private boolean fullscreen = false;
 
     @Override
@@ -44,34 +47,31 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
         playerView = findViewById(R.id.video_player);
         audioImageView = findViewById(R.id.audio_player_image);
-        //playerControlView = findViewById(R.id.video_controller);
+        playerControl = findViewById(R.id.showProgress);
+        playPauseButton = findViewById(R.id.playPause);
+        nextButton = findViewById(R.id.next);
+        prevButton = findViewById(R.id.prev);
+        playerControlView = findViewById(R.id.player_control);
         fullScreenButton = findViewById(R.id.exo_fullscreen_button);
         sharedPreferences = Preferences.getSharedPreferences(getApplicationContext());
-        initiatePlayerUI();
         playerActivity = this;
-        nextButton = findViewById(R.id.exo_next);
-        prevButton = findViewById(R.id.exo_prev);
-        if (fullscreen)
-            fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
-        else
-            fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
-        nextButton.setOnClickListener(v -> {
-            mediaControllerCompat.getTransportControls().skipToNext();
-        });
-        prevButton.setOnClickListener(v -> {
-            mediaControllerCompat.getTransportControls().skipToPrevious();
-        });
-        playerView.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                playerView.showController();
-                playerView.setControllerShowTimeoutMs(3000);
-            }
-            return false;
-        });
-
+        handler = new Handler();
+        initiatePlayerUI();
+        handleFullScreenIcon();
+        handleNextPrevButtonClick();
+        showOrHideUIControl();
+        handleTouchEvent();
     }
 
     public void initiatePlayerUI() {
+        if (null != exoPlayer) {
+            if (exoPlayer.getPlayWhenReady()) {
+                playerControlView.setPlayer(exoPlayer);
+                playPauseButton.setImageResource(R.drawable.pause);
+            } else {
+                playPauseButton.setImageResource(R.drawable.play);
+            }
+        }
         switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
             case AUDIO:
                 playerView.setVisibility(View.INVISIBLE);
@@ -79,17 +79,71 @@ public class PlayerActivity extends AppCompatActivity {
                 audioFilePath = sharedPreferences.getString("filePath", "def");
                 Bitmap audioIcon = getBitmapImage(audioFilePath);
                 Glide.with(getApplicationContext()).asBitmap().load(audioIcon).transform(new GranularRoundedCorners(15, 15, 15, 15)).into(audioImageView);
-               // playerView.setPlayer(exoPlayer);
-                //playerControlView.setPlayer(exoPlayer);
                 break;
             case VIDEO:
                 playerView.setVisibility(View.VISIBLE);
                 audioImageView.setVisibility(View.INVISIBLE);
                 playerView.setPlayer(exoPlayer);
                 addFunctionalityFullScreen();
-                //playerControlView.setPlayer(exoPlayer);
                 break;
         }
+    }
+
+    public void handleTouchEvent() {
+        playerView.setOnTouchListener((v, event) -> {
+            playerControl.setVisibility(View.VISIBLE);
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        playerControl.setVisibility(View.INVISIBLE);
+                    }
+                }, 5000);
+                playerControlView.show();
+                playerControlView.setShowTimeoutMs(5000);
+            }
+            return true;
+        });
+        audioImageView.setOnTouchListener((v, event) -> {
+            playerControl.setVisibility(View.VISIBLE);
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        playerControl.setVisibility(View.INVISIBLE);
+                    }
+                }, 5000);
+                playerControlView.show();
+                playerControlView.setShowTimeoutMs(5000);
+            }
+            return true;
+        });
+    }
+
+    public void handleNextPrevButtonClick() {
+        playPauseButton.setOnClickListener(v -> {
+            if (exoPlayer.getPlayWhenReady()) {
+                mediaControllerCompat.getTransportControls().pause();
+                playPauseButton.setImageResource(R.drawable.play);
+            } else {
+                mediaControllerCompat.getTransportControls().play();
+                playPauseButton.setImageResource(R.drawable.pause);
+            }
+        });
+        nextButton.setOnClickListener(v -> {
+            mediaControllerCompat.getTransportControls().skipToNext();
+        });
+        prevButton.setOnClickListener(v -> {
+            mediaControllerCompat.getTransportControls().skipToPrevious();
+        });
+
+    }
+
+    public void handleFullScreenIcon() {
+        if (fullscreen)
+            fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
+        else
+            fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
     }
 
     public Bitmap getBitmapImage(String fileUrl) {
@@ -113,7 +167,7 @@ public class PlayerActivity extends AppCompatActivity {
     public void addFunctionalityFullScreen() {
         fullScreenButton.setOnClickListener(v -> {
             if (fullscreen) {
-                fullScreenButton.setImageDrawable(getResources().getDrawable(R.drawable.fullscreen_enter));
+                fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
                 getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
                 if (getSupportActionBar() != null) {
                     getSupportActionBar().show();
@@ -122,7 +176,7 @@ public class PlayerActivity extends AppCompatActivity {
                 playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
                 fullscreen = false;
             } else {
-                fullScreenButton.setImageDrawable(getResources().getDrawable(R.drawable.fullscreen_exit));
+                fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
                 getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
                 if (getSupportActionBar() != null) {
                     getSupportActionBar().hide();
@@ -132,6 +186,10 @@ public class PlayerActivity extends AppCompatActivity {
                 fullscreen = true;
             }
         });
+    }
+
+    public void showOrHideUIControl() {
+        playerControl.setVisibility(View.INVISIBLE);
     }
 
     @Override

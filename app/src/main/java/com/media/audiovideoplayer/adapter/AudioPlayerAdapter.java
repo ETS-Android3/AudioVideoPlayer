@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,9 +19,12 @@ import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
 import com.media.audiovideoplayer.constants.AudioVideoConstants;
@@ -150,7 +154,17 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         public void bindAudioData(String title, String artist, String fileUrl) {
             title_text_view.setText(title);
             artist_text_view.setText(artist);
-            Glide.with(context).asBitmap().skipMemoryCache(true).load(getImage(fileUrl)).into(audioImageView);
+            Glide.with(context).asBitmap().load(getImage(fileUrl)).into(new CustomTarget<Bitmap>() {
+                @Override
+                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                    audioImageView.setImageBitmap(resource);
+                }
+
+                @Override
+                public void onLoadCleared(@Nullable Drawable placeholder) {
+                    audioImageView.setImageDrawable(placeholder);
+                }
+            });
         }
 
         public Bitmap getImage(String fileUrl) {
@@ -170,13 +184,6 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             }
             return icon;
         }
-
-        /*public Uri getImageUri(Context inContext, Bitmap inImage) {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-            String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-            return Uri.parse(path);
-        }*/
 
     }
 }

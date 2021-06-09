@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000"
     tools:context=".activity.PlayerActivity">
 
     <com.google.android.exoplayer2.ui.PlayerView
@@ -13,22 +12,72 @@
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:layout_margin="5dp"
-        app:controller_layout_id="@layout/exo_controller_layout"
-        app:use_controller="true" />
+        app:use_controller="false" />
 
     <ImageView
         android:id="@+id/audio_player_image"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_margin="25dp"
-        android:layout_centerInParent="true" />
+        android:layout_centerInParent="true"
+        android:layout_margin="25dp" />
 
-    <!-- <com.google.android.exoplayer2.ui.PlayerControlView
-         android:id="@+id/video_controller"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         android:layout_below="@id/video_player"
-         app:controller_layout_id="@layout/exo_controller_layout" />-->
+    <LinearLayout
+        android:id="@+id/showProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/prev"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:background="@null"
+                android:src="@drawable/previous" />
+
+            <ImageButton
+                android:id="@+id/playPause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:src="@drawable/play" />
+
+            <ImageButton
+                android:id="@+id/next"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:background="@null"
+                android:src="@drawable/next" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="25dp"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <com.google.android.exoplayer2.ui.PlayerControlView
+            android:id="@+id/player_control"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:controller_layout_id="@layout/exo_controller_layout" />
+    </LinearLayout>
 
 
 </RelativeLayout>
