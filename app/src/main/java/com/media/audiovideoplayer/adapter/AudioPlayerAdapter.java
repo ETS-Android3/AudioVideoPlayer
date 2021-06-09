@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +19,10 @@ import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
 import com.media.audiovideoplayer.constants.AudioVideoConstants;
@@ -35,6 +33,7 @@ import com.media.audiovideoplayer.sharedpreferences.Preferences;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.AudioHolder> implements SectionIndexer {
 
@@ -126,7 +125,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         .putString("filePath", audioData.get(getAdapterPosition()).getFileUrl())
                         .putString("artist", audioData.get(getAdapterPosition()).getArtist())
                         .putString("source", "AUDIO")
-                        .putString("action","def")
+                        .putString("action", "def")
                         .putLong("duration", audioData.get(getAdapterPosition()).getDuration())
                         .apply();
                 if (exoPlayer != null) {
@@ -155,36 +154,48 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         public void bindAudioData(String title, String artist, String fileUrl) {
             title_text_view.setText(title);
             artist_text_view.setText(artist);
-            Glide.with(context).asBitmap().load(getImage(fileUrl)).into(new CustomTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                    audioImageView.setImageBitmap(resource);
-                }
+            new ImageLoader().execute(fileUrl);
 
-                @Override
-                public void onLoadCleared(@Nullable Drawable placeholder) {
-                    audioImageView.setImageDrawable(placeholder);
-                }
-            });
         }
 
-        public Bitmap getImage(String fileUrl) {
-            MediaMetadataRetriever retriever;
+        public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
             Bitmap icon;
-            try {
-                retriever = new MediaMetadataRetriever();
-                retriever.setDataSource(fileUrl);
-                byte[] data = retriever.getEmbeddedPicture();
-                if (data != null) {
-                    icon = BitmapFactory.decodeByteArray(data, 0, data.length);
-                } else {
+
+            @Override
+            protected Bitmap doInBackground(String... strings) {
+                try {
+                    icon = Glide.with(context).asBitmap().skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.ALL).load(getImage(strings[0])).submit().get();
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return icon;
+            }
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                super.onPostExecute(bitmap);
+                audioImageView.setImageBitmap(bitmap);
+            }
+
+            public Bitmap getImage(String fileUrl) {
+                MediaMetadataRetriever retriever;
+                Bitmap icon;
+                try {
+                    retriever = new MediaMetadataRetriever();
+                    retriever.setDataSource(fileUrl);
+                    byte[] data = retriever.getEmbeddedPicture();
+                    if (data != null) {
+                        icon = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    } else {
+                        icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.music_image);
+                    }
+                } catch (Exception e) {
                     icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.music_image);
                 }
-            } catch (Exception e) {
-                icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.music_image);
+                return icon;
             }
-            return icon;
         }
+
 
     }
 }
