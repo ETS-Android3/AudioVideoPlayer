@@ -1,6 +1,7 @@
 package com.media.audiovideoplayer.activity;
 
 import static com.media.audiovideoplayer.service.PlayerService.exoPlayer;
+import static com.media.audiovideoplayer.service.PlayerService.fullscreen;
 import static com.media.audiovideoplayer.service.PlayerService.mediaControllerCompat;
 
 import android.app.Activity;
@@ -39,7 +40,6 @@ public class PlayerActivity extends AppCompatActivity {
     private ImageButton fullScreenButton;
     private LinearLayout playerControl;
     private Handler handler;
-    private boolean fullscreen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,6 @@ public class PlayerActivity extends AppCompatActivity {
         playerActivity = this;
         handler = new Handler();
         initiatePlayerUI();
-        handleFullScreenIcon();
         handleNextPrevButtonClick();
         showOrHideUIControl();
         handleTouchEvent();
@@ -71,6 +70,7 @@ public class PlayerActivity extends AppCompatActivity {
             } else {
                 playPauseButton.setImageResource(R.drawable.play);
             }
+            handleFullScreen();
         }
         switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
             case AUDIO:
@@ -93,12 +93,7 @@ public class PlayerActivity extends AppCompatActivity {
         playerView.setOnTouchListener((v, event) -> {
             playerControl.setVisibility(View.VISIBLE);
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        playerControl.setVisibility(View.INVISIBLE);
-                    }
-                }, 5000);
+                handler.postDelayed(() -> playerControl.setVisibility(View.INVISIBLE), 5000);
                 playerControlView.show();
                 playerControlView.setShowTimeoutMs(5000);
             }
@@ -107,12 +102,7 @@ public class PlayerActivity extends AppCompatActivity {
         audioImageView.setOnTouchListener((v, event) -> {
             playerControl.setVisibility(View.VISIBLE);
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        playerControl.setVisibility(View.INVISIBLE);
-                    }
-                }, 5000);
+                handler.postDelayed(() -> playerControl.setVisibility(View.INVISIBLE), 5000);
                 playerControlView.show();
                 playerControlView.setShowTimeoutMs(5000);
             }
@@ -139,11 +129,24 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
-    public void handleFullScreenIcon() {
-        if (fullscreen)
+    public void handleFullScreen() {
+        if (fullscreen) {
             fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
-        else
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().hide();
+            }
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+        } else {
             fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().show();
+            }
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+        }
     }
 
     public Bitmap getBitmapImage(String fileUrl) {
@@ -195,7 +198,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (fullscreen) {
-            fullScreenButton.setImageDrawable(getResources().getDrawable(R.drawable.fullscreen_enter));
+            fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().show();

@@ -126,6 +126,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         .putString("filePath", audioData.get(getAdapterPosition()).getFileUrl())
                         .putString("artist", audioData.get(getAdapterPosition()).getArtist())
                         .putString("source", "AUDIO")
+                        .putString("action","def")
                         .putLong("duration", audioData.get(getAdapterPosition()).getDuration())
                         .apply();
                 if (exoPlayer != null) {

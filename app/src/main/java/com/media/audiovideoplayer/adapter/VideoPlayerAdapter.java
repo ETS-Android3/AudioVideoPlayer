@@ -85,6 +85,7 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                         .putString("artist", videoDataArrayList.get(getAdapterPosition()).getTitle())
                         .putString("filePath", videoDataArrayList.get(getAdapterPosition()).getUrl())
                         .putString("source", "VIDEO")
+                        .putString("action","def")
                         .putLong("duration", videoDataArrayList.get(getAdapterPosition()).getDuration())
                         .apply();
                 if (exoPlayer != null) {

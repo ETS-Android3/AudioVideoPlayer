@@ -68,7 +68,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
     private PendingIntent stopIntent;
     private static final String NOTIFICATION_CHANNEL_ID = "AudioVideoPlayer";
     private static final String NOTIFICATION_CHANNEL_NAME = "AudioVideoNotification";
-
+    public static boolean fullscreen=false;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         MediaButtonReceiver.handleIntent(mediaSession, intent);
@@ -85,11 +85,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 exoPlayer.setPlayWhenReady(false);
                 exoPlayer.seekTo(0);
                 exoPlayer.stop();
-               /* updatePlaybackState(
+                updatePlaybackState(
                         PlaybackStateCompat.STATE_STOPPED,
                         exoPlayer.getCurrentPosition(),
                         false
-                );*/
+                );
                 stopForeground(true);
                 if (playerActivity != null) {
                     playerActivity.finishAndRemoveTask();
@@ -192,6 +192,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("title", audioData.get(index).getMusicTitle())
                             .putString("filePath", audioData.get(index).getFileUrl())
                             .putLong("duration", audioData.get(index).getDuration())
+                            .putString("action", "AUDIO_NEXT")
                             .putInt("index", index).apply();
                     break;
                 case VIDEO:
@@ -203,7 +204,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("title", videoDataArrayList.get(index).getTitle())
                             .putString("filePath", videoDataArrayList.get(index).getUrl())
                             .putLong("duration", videoDataArrayList.get(index).getDuration())
-                            .putInt("index", index).apply();
+                            .putInt("index", index)
+                            .putString("action", "VIDEO_NEXT")
+                            .apply();
                     break;
             }
             onPause();
@@ -226,6 +229,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("title", audioData.get(index).getMusicTitle())
                             .putString("filePath", audioData.get(index).getFileUrl())
                             .putLong("duration", audioData.get(index).getDuration())
+                            .putString("action", "AUDIO_PREV")
                             .putInt("index", index).apply();
                     break;
                 case VIDEO:
@@ -237,6 +241,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("title", videoDataArrayList.get(index).getTitle())
                             .putString("filePath", videoDataArrayList.get(index).getUrl())
                             .putLong("duration", videoDataArrayList.get(index).getDuration())
+                            .putString("action", "VIDEO_PREV")
                             .putInt("index", index).apply();
                     break;
             }
