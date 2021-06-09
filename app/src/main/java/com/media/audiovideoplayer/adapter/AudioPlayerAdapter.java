@@ -155,7 +155,6 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             title_text_view.setText(title);
             artist_text_view.setText(artist);
             new ImageLoader().execute(fileUrl);
-
         }
 
         public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
