@@ -39,12 +39,15 @@ import androidx.media.session.MediaButtonReceiver;
 
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MediaSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.MimeTypes;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
 import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
@@ -75,7 +78,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
     private boolean isNextSkipped = false;
     private static final String NOTIFICATION_CHANNEL_ID = "AudioVideoPlayer";
     private static final String NOTIFICATION_CHANNEL_NAME = "AudioVideoNotification";
-
+    private DefaultDataSourceFactory mediaSourceFactory;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -215,6 +218,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
                     }
+                    if(null!=playerActivity)
+                        playerActivity.recreate();
                     break;
                 case VIDEO:
                     size = videoDataArrayList.size() - 1;
@@ -235,7 +240,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
             }
             isPaused = true;
             onPlay();
-            playerActivity.recreate();
         }
 
         @Override
@@ -258,6 +262,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
                     }
+                    if(null!=playerActivity)
+                        playerActivity.recreate();
                     break;
                 case VIDEO:
                     size = videoDataArrayList.size() - 1;
@@ -277,7 +283,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
             }
             isPaused = true;
             onPlay();
-            playerActivity.recreate();
         }
 
         @Override
@@ -424,15 +429,17 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     public void initiateMedia(String url) {
         exoPlayer = initiateExoPlayer();
-        DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this, "AudioVideoPlayer");
+        //DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this, "AudioVideoPlayer");
         Uri uri = Uri.parse(url);
-        MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
-        exoPlayer.prepare(mediaSource);
+        MediaItem mediaItem = new MediaItem.Builder().setUri(uri).build();
+        MediaSource mediaSource= new DefaultMediaSourceFactory(this).createMediaSource(mediaItem);
+        exoPlayer.setMediaSource(mediaSource);
+        exoPlayer.prepare();
+        exoPlayer.setPlayWhenReady(true);
         if (currentPosition > 0L) {
             exoPlayer.seekTo(currentPosition);
             currentPosition = 0L;
         }
-        exoPlayer.setPlayWhenReady(true);
         if (exoPlayer.getPlayWhenReady()) {
             isPlaying = true;
             isPaused = false;
@@ -479,7 +486,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
     }
 
     private SimpleExoPlayer initiateExoPlayer() {
-        return (exoPlayer == null) ? ExoPlayerFactory.newSimpleInstance(this) : exoPlayer;
+        return (exoPlayer == null) ? new SimpleExoPlayer.Builder(this).build() : exoPlayer;
     }
 
     public void updateMetadata(String title, String artist, Bitmap bitmap, Long duration) {

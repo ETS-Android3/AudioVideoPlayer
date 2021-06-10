@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,6 +72,8 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         //Updating Currently playing song gif dynamically
         if (selectedPosition == position) {
             Glide.with(context).asGif().load(R.drawable.musicplay).into(holder.music_gif);
+            holder.title_text_view.setEllipsize(TextUtils.TruncateAt.END);
+            holder.artist_text_view.setEllipsize(TextUtils.TruncateAt.END);
         } else {
             holder.music_gif.setImageBitmap(null);
         }

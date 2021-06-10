@@ -19,7 +19,7 @@
         android:textSize="20dp"
         android:textStyle="bold" />
 
-    <com.google.android.exoplayer2.ui.PlayerView
+    <com.google.android.exoplayer2.ui.StyledPlayerView
         android:id="@+id/video_player"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

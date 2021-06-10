@@ -24,15 +24,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerControlView;
-import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.ui.StyledPlayerControlView;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.constants.AudioVideoEnum;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
 public class PlayerActivity extends AppCompatActivity {
-    public PlayerView playerView;
+    public StyledPlayerView playerView;
     public ImageView audioImageView;
     public PlayerControlView playerControlView;
     public static Activity playerActivity;
