@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.adapter.VideoPlayerAdapter;
 import com.media.audiovideoplayer.datamodel.VideoData;
@@ -77,7 +78,11 @@ public class VideoFragment extends Fragment {
         if (view != null) {
             videoPlayerRecyclerView = view.findViewById(R.id.video_recycler_view);
             videoPlayerRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 1));
-            videoPlayerAdapter = new VideoPlayerAdapter(loadVideosFromInternalStorage(), getActivity(), getContext());
+            ArrayList<VideoData> videoData = loadVideosFromInternalStorage();
+            if (!videoData.isEmpty())
+                videoPlayerAdapter = new VideoPlayerAdapter(videoData, getActivity(), getContext());
+            else
+                Snackbar.make(view, "No Video Files to be Loaded", Snackbar.LENGTH_LONG).show();
             videoPlayerRecyclerView.setAdapter(videoPlayerAdapter);
         }
         return view;

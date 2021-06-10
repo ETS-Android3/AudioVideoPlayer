@@ -6,6 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".activity.PlayerActivity">
 
+    <TextView
+        android:id="@+id/music_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="50dp"
+        android:ellipsize="marquee"
+        android:gravity="center"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:singleLine="true"
+        android:textColor="?android:colorControlNormal"
+        android:textSize="20dp"
+        android:textStyle="bold" />
+
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/video_player"
         android:layout_width="match_parent"
@@ -25,10 +38,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
         android:orientation="vertical"
-        android:background="@android:color/transparent"
         android:padding="10dp">
 
         <LinearLayout

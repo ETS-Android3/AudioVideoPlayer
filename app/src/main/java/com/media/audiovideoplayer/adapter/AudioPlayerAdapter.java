@@ -1,6 +1,8 @@
 package com.media.audiovideoplayer.adapter;
 
+import static com.media.audiovideoplayer.service.PlayerService.currentPosition;
 import static com.media.audiovideoplayer.service.PlayerService.exoPlayer;
+import static com.media.audiovideoplayer.service.PlayerService.isPaused;
 import static com.media.audiovideoplayer.service.PlayerService.mediaControllerCompat;
 
 import android.app.Activity;
@@ -10,13 +12,16 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,6 +35,7 @@ import com.media.audiovideoplayer.datamodel.AudioData;
 import com.media.audiovideoplayer.service.PlayerService;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
@@ -41,11 +47,14 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
     private final Activity av;
     private final Context context;
     private ArrayList<Integer> sectionsList;
+    public static int selectedPosition = -1;
+    public static AudioPlayerAdapter audioPlayerAdapter;
 
     public AudioPlayerAdapter(ArrayList<AudioData> audioDataArrayList, Activity activity, Context context) {
         audioData = audioDataArrayList;
         this.context = context;
         this.av = activity;
+        audioPlayerAdapter = this;
     }
 
     @NonNull
@@ -58,6 +67,43 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
     @Override
     public void onBindViewHolder(@NonNull AudioHolder holder, int position) {
         holder.bindAudioData(audioData.get(position).getMusicTitle(), audioData.get(position).getArtist(), audioData.get(position).getFileUrl());
+
+        //Updating Currently playing song gif dynamically
+        if (selectedPosition == position) {
+            Glide.with(context).asGif().load(R.drawable.musicplay).into(holder.music_gif);
+        } else {
+            holder.music_gif.setImageBitmap(null);
+        }
+
+        //Toggle Pop up Menu
+        holder.menu.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(context, v);
+            popupMenu.inflate(R.menu.music_operation);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.share:
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                        shareIntent.setType("audio/*");
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(audioData.get(position).getFileUrl()));
+                        context.startActivity(Intent.createChooser(shareIntent, "Share Song"));
+                        break;
+                    case R.id.deleteSong:
+                        File deleteFile = new File(audioData.get(position).getFileUrl());
+                        if (deleteFile.exists()) {
+                            deleteFile.delete();
+                        } else {
+                            Toast.makeText(context, "Sorry the file cannot be deleted", Toast.LENGTH_LONG).show();
+                        }
+                        audioData.remove(position);
+                        notifyItemRemoved(position);
+                        notifyDataSetChanged();
+                        break;
+                }
+                return false;
+            });
+            popupMenu.show();
+        });
+
     }
 
     @Override
@@ -69,7 +115,6 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
     public String[] getSections() {
         sectionsList = new ArrayList<>();
         ArrayList<String> sections = new ArrayList<>();
-        String[] section;
         int i = 0;
         int size = audioData.size();
         while (i < size) {
@@ -86,7 +131,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             i++;
             Collections.sort(sections);
         }
-        return sections.toArray(new String[sections.size()]);
+        return sections.toArray(new String[0]);
     }
 
     @Override
@@ -99,11 +144,13 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         return 0;
     }
 
+
     class AudioHolder extends RecyclerView.ViewHolder {
 
         private final ImageView audioImageView;
         private final TextView title_text_view;
         private final TextView artist_text_view;
+        private final ImageView music_gif;
         private TextView menu;
         private SharedPreferences sharedPreferences;
 
@@ -113,14 +160,14 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             title_text_view = itemView.findViewById(R.id.music_item_label);
             artist_text_view = itemView.findViewById(R.id.music_item_artist);
             menu = itemView.findViewById(R.id.music_card_menu);
-
+            music_gif = itemView.findViewById(R.id.music_gif);
             itemView.setOnClickListener(v -> {
                 sharedPreferences = Preferences.getSharedPreferences(context);
                 Intent playerActivityIntent = new Intent(context, PlayerActivity.class);
                 Intent playerService = new Intent(context, PlayerService.class);
                 playerService.setAction(AudioVideoConstants.START_FOREGROUND);
                 sharedPreferences.edit()
-                        .putInt("index", getAdapterPosition())
+                        .putInt("index", audioData.get(getAdapterPosition()).getIndex())
                         .putString("title", audioData.get(getAdapterPosition()).getMusicTitle())
                         .putString("filePath", audioData.get(getAdapterPosition()).getFileUrl())
                         .putString("artist", audioData.get(getAdapterPosition()).getArtist())
@@ -130,12 +177,13 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         .apply();
                 if (exoPlayer != null) {
                     if (exoPlayer.getPlayWhenReady()) {
-                        mediaControllerCompat.getTransportControls().pause();
+                        resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         exoPlayer.seekTo(0);
                         av.startActivity(playerActivityIntent);
                     } else {
                         av.startService(playerService);
+                        resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         av.startActivity(playerActivityIntent);
                         if (exoPlayer.getPlayWhenReady()) {
@@ -148,12 +196,20 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                     av.startService(playerService);
                     av.startActivity(playerActivityIntent);
                 }
+                updateMusicRecyclerViewGraphics(true);
             });
+        }
+
+        public void updateMusicRecyclerViewGraphics(boolean isValidSongIndex) {
+            selectedPosition = (isValidSongIndex) ? sharedPreferences.getInt("index", -1) : -1;
+            notifyDataSetChanged();
         }
 
         public void bindAudioData(String title, String artist, String fileUrl) {
             title_text_view.setText(title);
             artist_text_view.setText(artist);
+            title_text_view.setSelected(true);
+            artist_text_view.setSelected(true);
             new ImageLoader().execute(fileUrl);
         }
 
@@ -194,7 +250,12 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                 return icon;
             }
         }
-
-
     }
+
+    public void resetAttributes() {
+        exoPlayer.setPlayWhenReady(false);
+        isPaused = true;
+        currentPosition = 0L;
+    }
+
 }

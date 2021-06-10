@@ -12,12 +12,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
 import com.media.audiovideoplayer.datamodel.AudioData;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 import fastscroll.app.fastscrollalphabetindex.AlphabetIndexFastScrollRecyclerView;
 
@@ -82,7 +82,11 @@ public class AudioFragment extends Fragment {
             musicRecyclerView = view.findViewById(R.id.music_list);
             swipeRefreshLayout = view.findViewById(R.id.music_swipe_refresh);
             musicRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            audioPlayerAdapter = new AudioPlayerAdapter(loadSongsFromInternalStorage(), getActivity(), getContext());
+            ArrayList<AudioData> songsList = loadSongsFromInternalStorage();
+            if (!songsList.isEmpty())
+                audioPlayerAdapter = new AudioPlayerAdapter(songsList, getActivity(), getContext());
+            else
+                Snackbar.make(view, "No Music Files to be Loaded", Snackbar.LENGTH_LONG).show();
             musicRecyclerView.setAdapter(audioPlayerAdapter);
             musicRecyclerView.setIndexBarVisibility(true);
         }

@@ -2,6 +2,8 @@ package com.media.audiovideoplayer.service;
 
 import static com.media.audiovideoplayer.activity.PlayerActivity.playerActivity;
 import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.audioData;
+import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.audioPlayerAdapter;
+import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.selectedPosition;
 import static com.media.audiovideoplayer.adapter.VideoPlayerAdapter.videoDataArrayList;
 
 import android.app.Notification;
@@ -45,6 +47,7 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
+import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
 import com.media.audiovideoplayer.constants.AudioVideoConstants;
 import com.media.audiovideoplayer.constants.AudioVideoEnum;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
@@ -63,12 +66,17 @@ public class PlayerService extends MediaBrowserServiceCompat {
     public static MediaControllerCompat mediaControllerCompat;
     private PlaybackStateCompat.Builder playbackStateCompat;
     private MediaMetadataCompat.Builder mediaMetaDataBuilder;
+    private PendingIntent stopIntent;
+    public static long currentPosition;
     private String source;
     private boolean isPlaying = false;
-    private PendingIntent stopIntent;
+    public static boolean isPaused = false;
+    public static boolean fullscreen = false;
+    private boolean isNextSkipped = false;
     private static final String NOTIFICATION_CHANNEL_ID = "AudioVideoPlayer";
     private static final String NOTIFICATION_CHANNEL_NAME = "AudioVideoNotification";
-    public static boolean fullscreen=false;
+
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         MediaButtonReceiver.handleIntent(mediaSession, intent);
@@ -85,6 +93,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 exoPlayer.setPlayWhenReady(false);
                 exoPlayer.seekTo(0);
                 exoPlayer.stop();
+                if (null != audioPlayerAdapter) {
+                    updateMusicRecyclerViewGraphics(false);
+                }
                 updatePlaybackState(
                         PlaybackStateCompat.STATE_STOPPED,
                         exoPlayer.getCurrentPosition(),
@@ -151,29 +162,36 @@ public class PlayerService extends MediaBrowserServiceCompat {
     }
 
     MediaSessionCompat.Callback mediaSessionCallBack = new MediaSessionCompat.Callback() {
+
         @Override
-        public void onPlay() {
-            super.onPlay();
+        public void onPause() {
+            super.onPause();
+            isPlaying = false;
+            isPaused = true;
             try {
-                filePath = sharedPreferences.getString("filePath", "def");
-                initiateMedia(filePath);
-                //updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), true);
-                startForeground();
+                NotificationManagerCompat.from(getApplicationContext()).notify(1, getNotification());
+                exoPlayer.setPlayWhenReady(false);
+                updatePlaybackState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), true);
+                currentPosition = exoPlayer.getCurrentPosition();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         }
 
         @Override
-        public void onPause() {
-            super.onPause();
-            try {
-                isPlaying = false;
-                NotificationManagerCompat.from(getApplicationContext()).notify(1, getNotification());
-                exoPlayer.setPlayWhenReady(false);
-                updatePlaybackState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), true);
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+        public void onPlay() {
+            super.onPlay();
+            if (isPaused) {
+                isPlaying = true;
+                isPaused = false;
+                try {
+                    filePath = sharedPreferences.getString("filePath", "def");
+                    initiateMedia(filePath);
+                    //updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), true);
+                    startForeground();
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -194,6 +212,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putLong("duration", audioData.get(index).getDuration())
                             .putString("action", "AUDIO_NEXT")
                             .putInt("index", index).apply();
+                    if (null != audioPlayerAdapter) {
+                        updateMusicRecyclerViewGraphics(true);
+                    }
                     break;
                 case VIDEO:
                     size = videoDataArrayList.size() - 1;
@@ -207,9 +228,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putInt("index", index)
                             .putString("action", "VIDEO_NEXT")
                             .apply();
+                    if (null != audioPlayerAdapter) {
+                        updateMusicRecyclerViewGraphics(false);
+                    }
                     break;
             }
-            onPause();
+            isPaused = true;
             onPlay();
             playerActivity.recreate();
         }
@@ -231,6 +255,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putLong("duration", audioData.get(index).getDuration())
                             .putString("action", "AUDIO_PREV")
                             .putInt("index", index).apply();
+                    if (null != audioPlayerAdapter) {
+                        updateMusicRecyclerViewGraphics(true);
+                    }
                     break;
                 case VIDEO:
                     size = videoDataArrayList.size() - 1;
@@ -243,9 +270,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putLong("duration", videoDataArrayList.get(index).getDuration())
                             .putString("action", "VIDEO_PREV")
                             .putInt("index", index).apply();
+                    if (null != audioPlayerAdapter) {
+                        updateMusicRecyclerViewGraphics(false);
+                    }
                     break;
             }
-            onPause();
+            isPaused = true;
             onPlay();
             playerActivity.recreate();
         }
@@ -282,6 +312,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
             // build notification channel
             manager.createNotificationChannel(chan);
         }
+        getGraphicsBasedOnVideo();
         Bitmap notificationIcon = getBitmap(filePath);
         updateMetadata(title, title, notificationIcon, duration);
         startForeground(1, getNotification());
@@ -347,6 +378,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     }
 
+    void getGraphicsBasedOnVideo() {
+        if (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def")) == AudioVideoEnum.VIDEO) {
+            if (null != audioPlayerAdapter) {
+                updateMusicRecyclerViewGraphics(false);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
@@ -389,9 +428,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
         Uri uri = Uri.parse(url);
         MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
         exoPlayer.prepare(mediaSource);
+        if (currentPosition > 0L) {
+            exoPlayer.seekTo(currentPosition);
+            currentPosition = 0L;
+        }
         exoPlayer.setPlayWhenReady(true);
         if (exoPlayer.getPlayWhenReady()) {
             isPlaying = true;
+            isPaused = false;
         }
         exoPlayer.addListener(new Player.EventListener() {
             @Override
@@ -399,6 +443,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 switch (playbackState) {
                     case Player.STATE_READY:
                         isPlaying = true;
+                        isNextSkipped = false;
                         updatePlaybackState(
                                 PlaybackStateCompat.STATE_PLAYING,
                                 exoPlayer.getCurrentPosition(),
@@ -406,13 +451,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
                         break;
                     case Player.STATE_ENDED:
                         isPlaying = false;
-                        updatePlaybackState(
-                                PlaybackStateCompat.STATE_PAUSED,
-                                exoPlayer.getCurrentPosition(),
-                                true);
+                        if (!isNextSkipped) {
+                            mediaControllerCompat.getTransportControls().skipToNext();
+                            isNextSkipped = true;
+                        }
                         break;
                     case Player.STATE_IDLE:
                         isPlaying = false;
+                        isNextSkipped = false;
                         updatePlaybackState(
                                 PlaybackStateCompat.STATE_STOPPED,
                                 exoPlayer.getCurrentPosition(),
@@ -423,7 +469,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
             @Override
             public void onPlayerError(ExoPlaybackException error) {
-
+                isPlaying = false;
+                updatePlaybackState(
+                        PlaybackStateCompat.STATE_STOPPED,
+                        exoPlayer.getCurrentPosition(),
+                        false);
             }
         });
     }
@@ -455,6 +505,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
         mediaSession.setActive(isActive);
     }
 
+
     public class GenerateIconForVideo extends AsyncTask<String, Void, Bitmap> {
         Bitmap videoIcon;
 
@@ -467,7 +518,10 @@ public class PlayerService extends MediaBrowserServiceCompat {
             }
             return videoIcon;
         }
+    }
 
-
+    public void updateMusicRecyclerViewGraphics(boolean isValidSongIndex) {
+        selectedPosition = (isValidSongIndex) ? sharedPreferences.getInt("index", -1) : -1;
+        AudioPlayerAdapter.audioPlayerAdapter.notifyDataSetChanged();
     }
 }

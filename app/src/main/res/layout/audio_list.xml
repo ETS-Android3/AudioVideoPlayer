@@ -38,8 +38,8 @@
             android:layout_toRightOf="@+id/music_card"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
-            android:singleLine="true"
             android:maxEms="15"
+            android:singleLine="true"
             android:text="Line 1"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -54,8 +54,8 @@
             android:layout_toRightOf="@+id/music_card"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
-            android:singleLine="true"
             android:maxEms="15"
+            android:singleLine="true"
             android:text="Line 1"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -66,10 +66,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="12dp"
-            android:paddingLeft="5dp"
-            android:text="&#8942;"
+            android:layout_marginRight="25dp"
             android:rotation="90"
+            android:text="&#8942;"
             android:textAppearance="?android:textAppearanceLarge" />
 
         <ImageView
@@ -77,8 +76,8 @@
             android:layout_width="25dp"
             android:layout_height="50dp"
             android:layout_centerVertical="true"
-            android:layout_marginRight="10dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:layout_toStartOf="@+id/music_card_menu"
             android:layout_toLeftOf="@+id/music_card_menu" />
     </RelativeLayout>

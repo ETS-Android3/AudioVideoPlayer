@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -41,6 +42,7 @@ public class PlayerActivity extends AppCompatActivity {
     private ImageButton fullScreenButton;
     private LinearLayout playerControl;
     private Handler handler;
+    private TextView musicTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,7 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
         playerView = findViewById(R.id.video_player);
         audioImageView = findViewById(R.id.audio_player_image);
+        musicTitle = findViewById(R.id.music_title);
         playerControl = findViewById(R.id.showProgress);
         playPauseButton = findViewById(R.id.playPause);
         nextButton = findViewById(R.id.next);
@@ -74,6 +77,9 @@ public class PlayerActivity extends AppCompatActivity {
         }
         switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
             case AUDIO:
+                musicTitle.setVisibility(View.VISIBLE);
+                musicTitle.setSelected(true);
+                musicTitle.setText(sharedPreferences.getString("title", "def"));
                 playerView.setVisibility(View.INVISIBLE);
                 audioImageView.setVisibility(View.VISIBLE);
                 fullScreenButton.setVisibility(View.INVISIBLE);
@@ -82,6 +88,7 @@ public class PlayerActivity extends AppCompatActivity {
                 Glide.with(getApplicationContext()).asBitmap().load(audioIcon).transform(new GranularRoundedCorners(15, 15, 15, 15)).into(audioImageView);
                 break;
             case VIDEO:
+                musicTitle.setVisibility(View.INVISIBLE);
                 playerView.setVisibility(View.VISIBLE);
                 audioImageView.setVisibility(View.INVISIBLE);
                 fullScreenButton.setVisibility(View.VISIBLE);
@@ -212,8 +219,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    public class PlayMedia extends AsyncTask<Void,Void,Void>
-    {
+    public class PlayMedia extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {

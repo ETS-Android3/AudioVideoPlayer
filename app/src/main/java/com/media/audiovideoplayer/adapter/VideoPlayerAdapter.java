@@ -1,12 +1,15 @@
 package com.media.audiovideoplayer.adapter;
 
+import static com.media.audiovideoplayer.service.PlayerService.currentPosition;
 import static com.media.audiovideoplayer.service.PlayerService.exoPlayer;
+import static com.media.audiovideoplayer.service.PlayerService.isPaused;
 import static com.media.audiovideoplayer.service.PlayerService.mediaControllerCompat;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +58,10 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
         holder.bindData(videoDataArrayList.get(position).getUrl(), videoDataArrayList.get(position).getDisplayName());
         holder.share_video.setOnClickListener(v -> {
             // To be Added Later
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("video/*");
+            intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(videoDataArrayList.get(position).getUrl()));
+            context.startActivity(Intent.createChooser(intent, "Share Video"));
         });
     }
 
@@ -85,17 +92,18 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                         .putString("artist", videoDataArrayList.get(getAdapterPosition()).getTitle())
                         .putString("filePath", videoDataArrayList.get(getAdapterPosition()).getUrl())
                         .putString("source", "VIDEO")
-                        .putString("action","def")
+                        .putString("action", "def")
                         .putLong("duration", videoDataArrayList.get(getAdapterPosition()).getDuration())
                         .apply();
                 if (exoPlayer != null) {
                     if (exoPlayer.getPlayWhenReady()) {
-                        mediaControllerCompat.getTransportControls().pause();
+                        resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         exoPlayer.seekTo(0);
                         av.startActivity(playerActivityIntent);
                     } else {
                         av.startService(playerService);
+                        resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         av.startActivity(playerActivityIntent);
                         if (exoPlayer.getPlayWhenReady()) {
@@ -116,4 +124,11 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
             Glide.with(context).asBitmap().load(imageUrl).into(imageView);
         }
     }
+
+    public void resetAttributes() {
+        exoPlayer.setPlayWhenReady(false);
+        isPaused = true;
+        currentPosition = 0L;
+    }
+
 }
