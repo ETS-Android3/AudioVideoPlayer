@@ -179,7 +179,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         .putLong("duration", audioData.get(getAdapterPosition()).getDuration())
                         .apply();
                 if (exoPlayer != null) {
-                    if (exoPlayer.getPlayWhenReady()) {
+                    if (exoPlayer.isPlaying()) {
                         resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         exoPlayer.seekTo(0);
@@ -189,7 +189,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         av.startActivity(playerActivityIntent);
-                        if (exoPlayer.getPlayWhenReady()) {
+                        if (exoPlayer.isPlaying()) {
                             exoPlayer.seekTo(0);
                         } else {
                             exoPlayer.seekTo(0);
@@ -256,7 +256,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
     }
 
     public void resetAttributes() {
-        exoPlayer.setPlayWhenReady(false);
+        exoPlayer.pause();
         isPaused = true;
         currentPosition = 0L;
     }

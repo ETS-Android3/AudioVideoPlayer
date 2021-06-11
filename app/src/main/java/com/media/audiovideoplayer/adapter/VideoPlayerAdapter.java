@@ -96,7 +96,7 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                         .putLong("duration", videoDataArrayList.get(getAdapterPosition()).getDuration())
                         .apply();
                 if (exoPlayer != null) {
-                    if (exoPlayer.getPlayWhenReady()) {
+                    if (exoPlayer.isPlaying()) {
                         resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         exoPlayer.seekTo(0);
@@ -106,7 +106,7 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                         resetAttributes();
                         mediaControllerCompat.getTransportControls().play();
                         av.startActivity(playerActivityIntent);
-                        if (exoPlayer.getPlayWhenReady()) {
+                        if (exoPlayer.isPlaying()) {
                             exoPlayer.seekTo(0);
                         } else {
                             exoPlayer.seekTo(0);
@@ -126,7 +126,7 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
     }
 
     public void resetAttributes() {
-        exoPlayer.setPlayWhenReady(false);
+        exoPlayer.pause();
         isPaused = true;
         currentPosition = 0L;
     }

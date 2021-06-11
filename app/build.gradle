@@ -35,6 +35,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'org.jetbrains:annotations:15.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.media2:media2-widget:1.1.2'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -48,4 +49,5 @@ dependencies {
     implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.12.0'
     implementation 'com.google.android.exoplayer:exoplayer-ui:2.12.0'
     implementation 'com.google.android.exoplayer:extension-okhttp:2.12.0'
+    implementation 'androidx.media2:media2-player:1.1.0'
 }

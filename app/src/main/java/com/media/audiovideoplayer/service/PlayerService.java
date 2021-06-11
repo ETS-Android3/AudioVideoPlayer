@@ -1,5 +1,6 @@
 package com.media.audiovideoplayer.service;
 
+import static com.media.audiovideoplayer.activity.PlayerActivity.playPauseButton;
 import static com.media.audiovideoplayer.activity.PlayerActivity.playerActivity;
 import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.audioData;
 import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.audioPlayerAdapter;
@@ -22,7 +23,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -38,16 +38,14 @@ import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.bumptech.glide.Glide;
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.MediaSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
 import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
@@ -63,6 +61,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
     public SharedPreferences sharedPreferences;
     private String title;
     private String filePath;
+    private String source;
     private int index;
     private long duration;
     public static MediaSessionCompat mediaSession;
@@ -71,14 +70,13 @@ public class PlayerService extends MediaBrowserServiceCompat {
     private MediaMetadataCompat.Builder mediaMetaDataBuilder;
     private PendingIntent stopIntent;
     public static long currentPosition;
-    private String source;
     private boolean isPlaying = false;
     public static boolean isPaused = false;
     public static boolean fullscreen = false;
     private boolean isNextSkipped = false;
     private static final String NOTIFICATION_CHANNEL_ID = "AudioVideoPlayer";
     private static final String NOTIFICATION_CHANNEL_NAME = "AudioVideoNotification";
-    private DefaultDataSourceFactory mediaSourceFactory;
+    private LoadControl loadControl;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -108,6 +106,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 if (playerActivity != null) {
                     playerActivity.finishAndRemoveTask();
                 }
+                stopSelf();
             }
         }
         return super.onStartCommand(intent, flags, startId);
@@ -144,12 +143,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 )
         );
         setSessionToken(mediaSession.getSessionToken());
-        try {
-            mediaControllerCompat = new MediaControllerCompat(this, mediaSession.getSessionToken());
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-     /*   if (!isNoisyRecieverRegistered) {
+        mediaControllerCompat = new MediaControllerCompat(this, mediaSession.getSessionToken());
+        /*   if (!isNoisyRecieverRegistered) {
             val radioService: RadioService = this@RadioService
                     radioService.registerReceiver(
                     radioService.becomingNoisyReceiver,
@@ -176,6 +171,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 exoPlayer.setPlayWhenReady(false);
                 updatePlaybackState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), true);
                 currentPosition = exoPlayer.getCurrentPosition();
+                playPauseButton.setImageResource(R.drawable.play);
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -192,6 +188,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     initiateMedia(filePath);
                     //updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, exoPlayer.getCurrentPosition(), true);
                     startForeground();
+                    playPauseButton.setImageResource(R.drawable.pause);
                 } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -218,7 +215,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
                     }
-                    if(null!=playerActivity)
+                    if (null != playerActivity)
                         playerActivity.recreate();
                     break;
                 case VIDEO:
@@ -262,7 +259,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
                     }
-                    if(null!=playerActivity)
+                    if (null != playerActivity)
                         playerActivity.recreate();
                     break;
                 case VIDEO:
@@ -402,6 +399,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     }
 
+
     public Bitmap getBitmap(String url) throws ExecutionException, InterruptedException {
         Bitmap icon = null;
         MediaMetadataRetriever retriever;
@@ -428,11 +426,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
     }
 
     public void initiateMedia(String url) {
+        loadControl = new DefaultLoadControl.Builder().build();
         exoPlayer = initiateExoPlayer();
-        //DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this, "AudioVideoPlayer");
         Uri uri = Uri.parse(url);
         MediaItem mediaItem = new MediaItem.Builder().setUri(uri).build();
-        MediaSource mediaSource= new DefaultMediaSourceFactory(this).createMediaSource(mediaItem);
+        MediaSource mediaSource = new DefaultMediaSourceFactory(this).createMediaSource(mediaItem);
         exoPlayer.setMediaSource(mediaSource);
         exoPlayer.prepare();
         exoPlayer.setPlayWhenReady(true);
@@ -471,6 +469,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
                                 exoPlayer.getCurrentPosition(),
                                 false);
                         break;
+                    case Player.STATE_BUFFERING:
+                        break;
                 }
             }
 
@@ -486,7 +486,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
     }
 
     private SimpleExoPlayer initiateExoPlayer() {
-        return (exoPlayer == null) ? new SimpleExoPlayer.Builder(this).build() : exoPlayer;
+        return (exoPlayer == null) ? new SimpleExoPlayer.Builder(this).setLoadControl(loadControl).build() : exoPlayer;
     }
 
     public void updateMetadata(String title, String artist, Bitmap bitmap, Long duration) {

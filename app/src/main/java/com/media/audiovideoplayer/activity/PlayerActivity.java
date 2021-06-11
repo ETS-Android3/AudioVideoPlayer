@@ -24,10 +24,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerControlView;
-import com.google.android.exoplayer2.ui.StyledPlayerControlView;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.constants.AudioVideoEnum;
@@ -40,11 +38,13 @@ public class PlayerActivity extends AppCompatActivity {
     public static Activity playerActivity;
     public SharedPreferences sharedPreferences;
     private String audioFilePath;
-    private ImageButton nextButton, prevButton, playPauseButton;
+    private ImageButton nextButton, prevButton, stretchVideo;
+    public static ImageButton playPauseButton;
     private ImageButton fullScreenButton;
     private LinearLayout playerControl;
     private Handler handler;
     private TextView musicTitle;
+    private boolean isVideoStretched = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +55,7 @@ public class PlayerActivity extends AppCompatActivity {
         musicTitle = findViewById(R.id.music_title);
         playerControl = findViewById(R.id.showProgress);
         playPauseButton = findViewById(R.id.playPause);
+        stretchVideo = findViewById(R.id.stretch);
         nextButton = findViewById(R.id.next);
         prevButton = findViewById(R.id.prev);
         playerControlView = findViewById(R.id.player_control);
@@ -85,6 +86,7 @@ public class PlayerActivity extends AppCompatActivity {
                 playerView.setVisibility(View.INVISIBLE);
                 audioImageView.setVisibility(View.VISIBLE);
                 fullScreenButton.setVisibility(View.INVISIBLE);
+                stretchVideo.setVisibility(View.INVISIBLE);
                 audioFilePath = sharedPreferences.getString("filePath", "def");
                 Bitmap audioIcon = getBitmapImage(audioFilePath);
                 Glide.with(getApplicationContext()).asBitmap().load(audioIcon).transform(new GranularRoundedCorners(15, 15, 15, 15)).into(audioImageView);
@@ -94,6 +96,7 @@ public class PlayerActivity extends AppCompatActivity {
                 playerView.setVisibility(View.VISIBLE);
                 audioImageView.setVisibility(View.INVISIBLE);
                 fullScreenButton.setVisibility(View.VISIBLE);
+                stretchVideo.setVisibility(View.VISIBLE);
                 new PlayMedia().execute();
                 break;
         }
@@ -103,7 +106,10 @@ public class PlayerActivity extends AppCompatActivity {
         playerView.setOnTouchListener((v, event) -> {
             playerControl.setVisibility(View.VISIBLE);
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                handler.postDelayed(() -> playerControl.setVisibility(View.INVISIBLE), 5000);
+                handler.postDelayed(() -> {
+                            playerControl.setVisibility(View.INVISIBLE);
+                        }
+                        , 5000);
                 playerControlView.show();
                 playerControlView.setShowTimeoutMs(5000);
             }
@@ -147,7 +153,8 @@ public class PlayerActivity extends AppCompatActivity {
                 getSupportActionBar().hide();
             }
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            stretchVideo.setImageResource(R.drawable.stretch_on);
         } else {
             fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
@@ -156,6 +163,69 @@ public class PlayerActivity extends AppCompatActivity {
             }
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            stretchVideo.setImageResource(R.drawable.stretch_on);
+        }
+    }
+
+    public void stretchVideo() {
+        stretchVideo.setOnClickListener(v -> {
+            if (isVideoStretched) {
+                stretchVideo.setImageResource(R.drawable.stretch_on);
+                playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+                isVideoStretched = false;
+            } else {
+                stretchVideo.setImageResource(R.drawable.stretch_off);
+                playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
+                isVideoStretched = true;
+            }
+        });
+    }
+
+    public void addFunctionalityFullScreen() {
+        fullScreenButton.setOnClickListener(v -> {
+            if (fullscreen) {
+                fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().show();
+                }
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+                stretchVideo.setImageResource(R.drawable.stretch_on);
+                fullscreen = false;
+            } else {
+                fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().hide();
+                }
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                stretchVideo.setImageResource(R.drawable.stretch_on);
+                playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+                fullscreen = true;
+            }
+        });
+    }
+
+    public void showOrHideUIControl() {
+        playerControl.setVisibility(View.INVISIBLE);
+    }
+
+    public class PlayMedia extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void unused) {
+            super.onPostExecute(unused);
+            playerView.setPlayer(exoPlayer);
+            playerControlView.setPlayer(exoPlayer);
+            addFunctionalityFullScreen();
+            handleFullScreen();
+            stretchVideo();
         }
     }
 
@@ -177,34 +247,6 @@ public class PlayerActivity extends AppCompatActivity {
         return icon;
     }
 
-    public void addFunctionalityFullScreen() {
-        fullScreenButton.setOnClickListener(v -> {
-            if (fullscreen) {
-                fullScreenButton.setImageResource(R.drawable.fullscreen_enter);
-                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().show();
-                }
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-                fullscreen = false;
-            } else {
-                fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
-                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().hide();
-                }
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-                fullscreen = true;
-            }
-        });
-    }
-
-    public void showOrHideUIControl() {
-        playerControl.setVisibility(View.INVISIBLE);
-    }
-
     @Override
     public void onBackPressed() {
         if (fullscreen) {
@@ -214,26 +256,11 @@ public class PlayerActivity extends AppCompatActivity {
                 getSupportActionBar().show();
             }
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            stretchVideo.setImageResource(R.drawable.stretch_on);
             playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
             fullscreen = false;
         } else {
             finish();
-        }
-    }
-
-    public class PlayMedia extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void unused) {
-            super.onPostExecute(unused);
-            playerView.setPlayer(exoPlayer);
-            addFunctionalityFullScreen();
-            handleFullScreen();
         }
     }
 

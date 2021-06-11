@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000"
     tools:context=".activity.PlayerActivity">
 
     <TextView
@@ -78,6 +79,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/player_control_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
