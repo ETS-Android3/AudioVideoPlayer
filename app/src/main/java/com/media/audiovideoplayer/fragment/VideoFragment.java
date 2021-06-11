@@ -6,6 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -38,6 +41,7 @@ public class VideoFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private boolean isGridViewChanged;
 
     public VideoFragment() {
         // Required empty public constructor
@@ -64,10 +68,7 @@ public class VideoFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -87,6 +88,35 @@ public class VideoFragment extends Fragment {
         }
         return view;
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.change_layout, menu);
+        if (isGridViewChanged)
+            menu.getItem(0).setIcon(R.drawable.grid_view);
+        else
+            menu.getItem(0).setIcon(R.drawable.list_view);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.layout_change) {
+            if (!isGridViewChanged) {
+                videoPlayerRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+                videoPlayerRecyclerView.setAdapter(videoPlayerAdapter);
+                item.setIcon(R.drawable.grid_view);
+                isGridViewChanged = true;
+            } else {
+                videoPlayerRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 1));
+                videoPlayerRecyclerView.setAdapter(videoPlayerAdapter);
+                item.setIcon(R.drawable.list_view);
+                isGridViewChanged = false;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
     public ArrayList<VideoData> loadVideosFromInternalStorage() {
         videoDataArrayList = new ArrayList<>();
