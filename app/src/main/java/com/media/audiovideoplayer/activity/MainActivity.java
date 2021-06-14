@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Permission";
     private static TabLayout tabLayout;
     private static ViewPager viewPager;
+    public static View mainActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,18 +35,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.view_Pager);
+        mainActivity=findViewById(R.id.mainActivity);
         isStoragePermissionGranted();
         if (isStoragePermissionGranted())
             initiateTabs();
     }
 
     public void initiateTabs() {
-        ArrayList<Fragment> fragments = new ArrayList<>();
-        fragments.add(new VideoFragment());
-        fragments.add(new AudioFragment());
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments);
-        viewPager.setAdapter(viewPagerAdapter);
-        tabLayout.setupWithViewPager(viewPager);
+        try {
+            ArrayList<Fragment> fragments = new ArrayList<>();
+            fragments.add(new VideoFragment());
+            fragments.add(new AudioFragment());
+            ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments);
+            viewPager.setAdapter(viewPagerAdapter);
+            tabLayout.setupWithViewPager(viewPager);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean isStoragePermissionGranted() {

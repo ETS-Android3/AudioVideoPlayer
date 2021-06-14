@@ -82,14 +82,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
     public int onStartCommand(Intent intent, int flags, int startId) {
         MediaButtonReceiver.handleIntent(mediaSession, intent);
         if (intent.getAction().equals(AudioVideoConstants.START_FOREGROUND)) {
-            sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
             try {
                 startForeground();
+                sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         } else if (intent.getAction().equals(AudioVideoConstants.STOP_FOREGROUND)) {
-            if (sharedPreferences.getBoolean("serviceStatus", false)) {
+            try {
                 sharedPreferences.edit().putBoolean("serviceStatus", false).apply();
                 exoPlayer.setPlayWhenReady(false);
                 exoPlayer.seekTo(0);
@@ -103,10 +103,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
                         false
                 );
                 stopForeground(true);
-                if (playerActivity != null) {
+                if (null != playerActivity) {
                     playerActivity.finishAndRemoveTask();
                 }
-                stopSelf();
+                stopSelf(startId);
+            } catch (Exception e) {
+                e.getCause();
             }
         }
         return super.onStartCommand(intent, flags, startId);
@@ -157,6 +159,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
         mediaMetaDataBuilder = new MediaMetadataCompat.Builder();
         playbackStateCompat.setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SEEK_TO);
         initiateMedia(filePath);
+        sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
     }
 
     MediaSessionCompat.Callback mediaSessionCallBack = new MediaSessionCompat.Callback() {
