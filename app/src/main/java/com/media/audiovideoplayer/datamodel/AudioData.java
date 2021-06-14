@@ -25,33 +25,16 @@ public class AudioData {
         return index;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
     public String getMusicTitle() {
         return musicTitle;
-    }
-
-    public void setMusicTitle(String musicTitle) {
-        this.musicTitle = musicTitle;
     }
 
     public String getArtist() {
         return artist;
     }
 
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
-
     public String getFileUrl() {
         return fileUrl;
     }
-
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
-    }
-
 
 }
