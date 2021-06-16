@@ -170,17 +170,10 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         .putLong("duration", audioData.get(getAdapterPosition()).getDuration())
                         .apply();
                 if (exoPlayer != null) {
-                    if (exoPlayer.isPlaying()) {
-                        resetAttributes();
-                        mediaControllerCompat.getTransportControls().play();
-                        exoPlayer.seekTo(0);
-                        av.startActivity(playerActivityIntent);
-                    } else {
-                        resetAttributes();
-                        mediaControllerCompat.getTransportControls().play();
-                        exoPlayer.seekTo(0);
-                        av.startActivity(playerActivityIntent);
-                    }
+                    resetAttributes();
+                    mediaControllerCompat.getTransportControls().play();
+                    exoPlayer.seekTo(0);
+                    av.startActivity(playerActivityIntent);
                 } else {
                     av.startService(playerService);
                     av.startActivity(playerActivityIntent);
