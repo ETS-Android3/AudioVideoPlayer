@@ -46,7 +46,6 @@ import android.support.v4.media.session.PlaybackStateCompat;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
@@ -63,7 +62,6 @@ import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
-import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
 import com.media.audiovideoplayer.constants.AudioVideoConstants;
 import com.media.audiovideoplayer.constants.AudioVideoEnum;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
