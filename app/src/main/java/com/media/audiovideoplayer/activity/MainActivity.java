@@ -1,6 +1,7 @@
 package com.media.audiovideoplayer.activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private static TabLayout tabLayout;
     private static ViewPager viewPager;
     public static View mainActivity;
-
+    public static Activity mav;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.view_Pager);
         mainActivity=findViewById(R.id.mainActivity);
+        mav=this;
         isStoragePermissionGranted();
         if (isStoragePermissionGranted())
             initiateTabs();

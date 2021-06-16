@@ -1,28 +1,42 @@
 package com.media.audiovideoplayer.service;
 
+import static android.media.AudioManager.AUDIOFOCUS_GAIN;
+import static android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
+import static android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK;
+import static com.media.audiovideoplayer.activity.MainActivity.mav;
 import static com.media.audiovideoplayer.activity.PlayerActivity.playPauseButton;
 import static com.media.audiovideoplayer.activity.PlayerActivity.playerActivity;
 import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.audioData;
 import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.audioPlayerAdapter;
 import static com.media.audiovideoplayer.adapter.AudioPlayerAdapter.selectedPosition;
 import static com.media.audiovideoplayer.adapter.VideoPlayerAdapter.videoDataArrayList;
+import static com.media.audiovideoplayer.constants.AudioVideoConstants.BECOMING_NOISY;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -32,6 +46,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.media.MediaBrowserServiceCompat;
@@ -74,9 +89,13 @@ public class PlayerService extends MediaBrowserServiceCompat {
     public static boolean isPaused = false;
     public static boolean fullscreen = false;
     private boolean isNextSkipped = false;
+    private boolean isNoisyRecieverRegistered = false;
     private static final String NOTIFICATION_CHANNEL_ID = "AudioVideoPlayer";
     private static final String NOTIFICATION_CHANNEL_NAME = "AudioVideoNotification";
     private LoadControl loadControl;
+    private AudioManager audioManager;
+    private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
+    private AudioFocusRequest audioFocusRequest;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -131,21 +150,42 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 )
         );
         setSessionToken(mediaSession.getSessionToken());
-        mediaControllerCompat = new MediaControllerCompat(this, mediaSession.getSessionToken());
-        /*   if (!isNoisyRecieverRegistered) {
-            val radioService: RadioService = this@RadioService
-                    radioService.registerReceiver(
-                    radioService.becomingNoisyReceiver,
-                    IntentFilter("android.media.AUDIO_BECOMING_NOISY")
-            )
-            isNoisyRecieverRegistered = true
-            ErrorHandler.logDebug("isNoisyRecieverRegistered $isNoisyRecieverRegistered")
-        }*/
+        try {
+            mediaControllerCompat = new MediaControllerCompat(this, mediaSession.getSessionToken());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         playbackStateCompat = new PlaybackStateCompat.Builder();
         mediaMetaDataBuilder = new MediaMetadataCompat.Builder();
         playbackStateCompat.setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SEEK_TO);
         sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
+        registerNoisyReceiver();
+        requestAudioFocus();
     }
+
+    void registerNoisyReceiver() {
+        if (!isNoisyRecieverRegistered) {
+            this.registerReceiver(audioNoisyReciever, new IntentFilter(BECOMING_NOISY));
+            isNoisyRecieverRegistered = true;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private AudioAttributes getAudioAttributes() {
+        return new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build();
+    }
+
+    private BroadcastReceiver audioNoisyReciever = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equalsIgnoreCase(BECOMING_NOISY)) {
+                mediaControllerCompat.getTransportControls().pause();
+            }
+        }
+    };
 
     MediaSessionCompat.Callback mediaSessionCallBack = new MediaSessionCompat.Callback() {
 
@@ -174,6 +214,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 try {
                     startForeground();
                     playPauseButton.setImageResource(R.drawable.pause);
+                    requestAudioFocus();
                 } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -321,6 +362,10 @@ public class PlayerService extends MediaBrowserServiceCompat {
         stopForeground(true);
         if (null != playerActivity) {
             playerActivity.finishAndRemoveTask();
+
+        }
+        if (null != mav) {
+            mav.finishAndRemoveTask();
         }
         stopSelf(startId);
         sharedPreferences.edit().putBoolean("serviceStatus", false).apply();
@@ -512,6 +557,48 @@ public class PlayerService extends MediaBrowserServiceCompat {
         mediaSession.setActive(isActive);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    void requestAudioFocus() {
+        audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        AudioAttributes audioAttributes = getAudioAttributes();
+        audioFocusChangeListener = focusChange -> {
+
+            switch (focusChange) {
+
+                case AUDIOFOCUS_GAIN:
+                case AUDIOFOCUS_GAIN_TRANSIENT:
+                case AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                    mediaControllerCompat.getTransportControls().play();
+                    break;
+                case AUDIOFOCUS_LOSS:
+                case AUDIOFOCUS_LOSS_TRANSIENT:
+                case AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    mediaControllerCompat.getTransportControls().pause();
+                    break;
+
+            }
+        };
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest = new AudioFocusRequest.Builder(AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(audioAttributes)
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(audioFocusChangeListener).build();
+        }
+        // Request audio focus for playback
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioManager.requestAudioFocus(audioFocusRequest);
+        } else {
+            audioManager.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, AUDIOFOCUS_GAIN);
+        }
+    }
+
+    void releaseAudioFocus() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            audioManager.abandonAudioFocusRequest(audioFocusRequest);
+        else
+            audioManager.abandonAudioFocus(audioFocusChangeListener);
+    }
+
     @Nullable
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
@@ -521,6 +608,19 @@ public class PlayerService extends MediaBrowserServiceCompat {
     @Override
     public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
 
+    }
+
+
+    @Override
+    public void onDestroy() {
+        if (null != mediaSession) {
+            mediaSession.release();
+        }
+        if (isNoisyRecieverRegistered) {
+            unregisterReceiver(audioNoisyReciever);
+            isNoisyRecieverRegistered = false;
+        }
+        releaseAudioFocus();
     }
 
     public class GenerateIconForVideo extends AsyncTask<String, Void, Bitmap> {

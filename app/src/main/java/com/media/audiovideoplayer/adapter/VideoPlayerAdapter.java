@@ -11,11 +11,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +31,7 @@ import com.media.audiovideoplayer.datamodel.VideoData;
 import com.media.audiovideoplayer.service.PlayerService;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.VideoHolder> {
@@ -80,7 +84,6 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
             textView = itemView.findViewById(R.id.video_card_text);
             imageView = itemView.findViewById(R.id.video_card_image);
             share_video = itemView.findViewById(R.id.share_video);
-
             itemView.setOnClickListener(v -> {
                 sharedPreferences = Preferences.getSharedPreferences(context);
                 Intent playerActivityIntent = new Intent(context, PlayerActivity.class);

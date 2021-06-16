@@ -90,17 +90,6 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(audioData.get(position).getFileUrl()));
                         context.startActivity(Intent.createChooser(shareIntent, "Share Song"));
                         break;
-                    case R.id.deleteSong:
-                        File deleteFile = new File(audioData.get(position).getFileUrl());
-                        if (deleteFile.exists()) {
-                            deleteFile.delete();
-                        } else {
-                            Toast.makeText(context, "Sorry the file cannot be deleted", Toast.LENGTH_LONG).show();
-                        }
-                        audioData.remove(position);
-                        notifyItemRemoved(position);
-                        notifyDataSetChanged();
-                        break;
                 }
                 return false;
             });
@@ -187,7 +176,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                     } else {
                         av.startService(playerService);
                         resetAttributes();
-                        mediaControllerCompat.getTransportControls().play();
+                        //mediaControllerCompat.getTransportControls().play();
                         av.startActivity(playerActivityIntent);
                         if (exoPlayer.isPlaying()) {
                             exoPlayer.seekTo(0);

@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi-v21/share.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/fullscreen_enter.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/fullscreen_exit.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/next.xml" value="0.1" />
@@ -19,9 +20,10 @@
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/audio_list.xml" value="0.264" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/exo_controller_layout.xml" value="0.253125" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/fragment_audio.xml" value="0.12708333333333333" />
-        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/video_list.xml" value="0.12708333333333333" />
+        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/video_list.xml" value="0.25" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/menu/change_layout.xml" value="0.25" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/menu/music_operation.xml" value="0.25" />
+        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/menu/video_menu.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/MainActivity/app/src/main/res/drawable-anydpi/share.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/MainActivity/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/MainActivity/app/src/main/res/layout/audio_list.xml" value="0.13125" />
