@@ -170,7 +170,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private AudioAttributes getAudioAttributes() {
         return new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -501,7 +500,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     public void updateMusicRecyclerViewGraphics(boolean isValidSongIndex) {
         selectedPosition = (isValidSongIndex) ? sharedPreferences.getInt("index", -1) : -1;
-        AudioPlayerAdapter.audioPlayerAdapter.notifyDataSetChanged();
+        audioPlayerAdapter.notifyDataSetChanged();
     }
 
     public Bitmap getBitmap(String url) throws ExecutionException, InterruptedException {
@@ -557,14 +556,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
         mediaSession.setActive(isActive);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void requestAudioFocus() {
         audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         AudioAttributes audioAttributes = getAudioAttributes();
         audioFocusChangeListener = focusChange -> {
-
             switch (focusChange) {
-
                 case AUDIOFOCUS_GAIN:
                 case AUDIOFOCUS_GAIN_TRANSIENT:
                 case AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
@@ -575,7 +571,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 case AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                     mediaControllerCompat.getTransportControls().pause();
                     break;
-
             }
         };
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
