@@ -175,7 +175,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 .build();
     }
 
-    private BroadcastReceiver audioNoisyReciever = new BroadcastReceiver() {
+    private final BroadcastReceiver audioNoisyReciever = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equalsIgnoreCase(BECOMING_NOISY)) {
@@ -197,6 +197,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 updatePlaybackState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), true);
                 currentPosition = exoPlayer.getCurrentPosition();
                 playPauseButton.setImageResource(R.drawable.play);
+                switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
+                    case AUDIO:
+                        updateMusicRecyclerViewGraphics(true);
+                        break;
+                    case VIDEO:
+                        updateMusicRecyclerViewGraphics(false);
+                        break;
+                }
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -212,6 +220,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     startForeground();
                     playPauseButton.setImageResource(R.drawable.pause);
                     requestAudioFocus();
+                    switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
+                        case AUDIO:
+                            updateMusicRecyclerViewGraphics(true);
+                            break;
+                        case VIDEO:
+                            updateMusicRecyclerViewGraphics(false);
+                            break;
+                    }
                 } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -235,9 +251,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putLong("duration", audioData.get(index).getDuration())
                             .putString("action", "AUDIO_NEXT")
                             .putInt("index", index).apply();
-                    if (null != audioPlayerAdapter) {
+                    /*if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
-                    }
+                    }*/
                     if (null != playerActivity)
                         playerActivity.recreate();
                     break;
@@ -279,9 +295,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putLong("duration", audioData.get(index).getDuration())
                             .putString("action", "AUDIO_PREV")
                             .putInt("index", index).apply();
-                    if (null != audioPlayerAdapter) {
+                    /*if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
-                    }
+                    }*/
                     if (null != playerActivity)
                         playerActivity.recreate();
                     break;

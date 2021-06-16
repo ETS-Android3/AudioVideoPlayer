@@ -22,7 +22,6 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,11 +35,9 @@ import com.media.audiovideoplayer.datamodel.AudioData;
 import com.media.audiovideoplayer.service.PlayerService;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.AudioHolder> implements SectionIndexer {
 
@@ -72,8 +69,13 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         //Updating Currently playing song gif dynamically
         if (selectedPosition == position) {
             Glide.with(context).asGif().load(R.drawable.musicplay).into(holder.music_gif);
-            holder.title_text_view.setEllipsize(TextUtils.TruncateAt.END);
-            holder.artist_text_view.setEllipsize(TextUtils.TruncateAt.END);
+            if (null != exoPlayer) {
+                if (!exoPlayer.getPlayWhenReady()) {
+                    Glide.with(context).asBitmap().load(R.drawable.musicplay).into(holder.music_gif);
+                }
+                holder.title_text_view.setEllipsize(TextUtils.TruncateAt.END);
+                holder.artist_text_view.setEllipsize(TextUtils.TruncateAt.END);
+            }
         } else {
             holder.music_gif.setImageBitmap(null);
         }
@@ -174,21 +176,16 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         exoPlayer.seekTo(0);
                         av.startActivity(playerActivityIntent);
                     } else {
-                        av.startService(playerService);
                         resetAttributes();
-                        //mediaControllerCompat.getTransportControls().play();
+                        mediaControllerCompat.getTransportControls().play();
+                        exoPlayer.seekTo(0);
                         av.startActivity(playerActivityIntent);
-                        if (exoPlayer.isPlaying()) {
-                            exoPlayer.seekTo(0);
-                        } else {
-                            exoPlayer.seekTo(0);
-                        }
                     }
                 } else {
                     av.startService(playerService);
                     av.startActivity(playerActivityIntent);
+                    updateMusicRecyclerViewGraphics(true);
                 }
-                updateMusicRecyclerViewGraphics(true);
             });
         }
 
@@ -210,18 +207,14 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
 
             @Override
             protected Bitmap doInBackground(String... strings) {
-                try {
-                    icon = Glide.with(context).asBitmap().skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.ALL).load(getImage(strings[0])).submit().get();
-                } catch (ExecutionException | InterruptedException e) {
-                    e.printStackTrace();
-                }
+                icon = getImage(strings[0]);
                 return icon;
             }
 
             @Override
             protected void onPostExecute(Bitmap bitmap) {
                 super.onPostExecute(bitmap);
-                audioImageView.setImageBitmap(bitmap);
+                Glide.with(context).asBitmap().load(bitmap).diskCacheStrategy(DiskCacheStrategy.ALL).into(audioImageView);
             }
 
             public Bitmap getImage(String fileUrl) {
