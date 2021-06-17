@@ -27,7 +27,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
 import com.media.audiovideoplayer.constants.AudioVideoConstants;
@@ -69,13 +68,8 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         //Updating Currently playing song gif dynamically
         if (selectedPosition == position) {
             Glide.with(context).asGif().load(R.drawable.musicplay).into(holder.music_gif);
-            if (null != exoPlayer) {
-                if (!exoPlayer.getPlayWhenReady()) {
-                    Glide.with(context).asBitmap().load(R.drawable.musicplay).into(holder.music_gif);
-                }
-                holder.title_text_view.setEllipsize(TextUtils.TruncateAt.END);
-                holder.artist_text_view.setEllipsize(TextUtils.TruncateAt.END);
-            }
+            holder.title_text_view.setEllipsize(TextUtils.TruncateAt.END);
+            holder.artist_text_view.setEllipsize(TextUtils.TruncateAt.END);
         } else {
             holder.music_gif.setImageBitmap(null);
         }
@@ -169,7 +163,9 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                         .putString("action", "def")
                         .putLong("duration", audioData.get(getAdapterPosition()).getDuration())
                         .apply();
-                if (exoPlayer != null) {
+                if (null != exoPlayer) {
+                    //added start service just in case if service is not active
+                    av.startService(playerService);
                     resetAttributes();
                     mediaControllerCompat.getTransportControls().play();
                     exoPlayer.seekTo(0);
@@ -177,8 +173,8 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
                 } else {
                     av.startService(playerService);
                     av.startActivity(playerActivityIntent);
-                    updateMusicRecyclerViewGraphics(true);
                 }
+                updateMusicRecyclerViewGraphics(true);
             });
         }
 
@@ -207,7 +203,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             @Override
             protected void onPostExecute(Bitmap bitmap) {
                 super.onPostExecute(bitmap);
-                Glide.with(context).asBitmap().load(bitmap).diskCacheStrategy(DiskCacheStrategy.ALL).into(audioImageView);
+                audioImageView.setImageBitmap(icon);
             }
 
             public Bitmap getImage(String fileUrl) {

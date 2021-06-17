@@ -11,14 +11,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,7 +28,6 @@ import com.media.audiovideoplayer.datamodel.VideoData;
 import com.media.audiovideoplayer.service.PlayerService;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.VideoHolder> {
@@ -94,27 +90,18 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                         .putString("title", videoDataArrayList.get(getAdapterPosition()).getDisplayName())
                         .putString("artist", videoDataArrayList.get(getAdapterPosition()).getTitle())
                         .putString("filePath", videoDataArrayList.get(getAdapterPosition()).getUrl())
+                        .putString("artist", videoDataArrayList.get(getAdapterPosition()).getTitle())
                         .putString("source", "VIDEO")
                         .putString("action", "def")
                         .putLong("duration", videoDataArrayList.get(getAdapterPosition()).getDuration())
                         .apply();
-                if (exoPlayer != null) {
-                    if (exoPlayer.isPlaying()) {
-                        resetAttributes();
-                        mediaControllerCompat.getTransportControls().play();
-                        exoPlayer.seekTo(0);
-                        av.startActivity(playerActivityIntent);
-                    } else {
-                        av.startService(playerService);
-                        resetAttributes();
-                        mediaControllerCompat.getTransportControls().play();
-                        av.startActivity(playerActivityIntent);
-                        if (exoPlayer.isPlaying()) {
-                            exoPlayer.seekTo(0);
-                        } else {
-                            exoPlayer.seekTo(0);
-                        }
-                    }
+                if (null != exoPlayer) {
+                    //added start service just in case if service is not active
+                    av.startService(playerService);
+                    resetAttributes();
+                    mediaControllerCompat.getTransportControls().play();
+                    exoPlayer.seekTo(0);
+                    av.startActivity(playerActivityIntent);
                 } else {
                     av.startService(playerService);
                     av.startActivity(playerActivityIntent);

@@ -74,6 +74,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
     public SharedPreferences sharedPreferences;
     private String title;
     private String filePath;
+    private String artist;
     private String source;
     private int index;
     private long duration;
@@ -101,7 +102,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
         if (intent.getAction().equals(AudioVideoConstants.START_FOREGROUND)) {
             try {
                 startForeground();
-                sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -119,11 +119,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
     public void onCreate() {
         super.onCreate();
         sharedPreferences = Preferences.getSharedPreferences(this);
-        title = sharedPreferences.getString("title", "def");
-        filePath = sharedPreferences.getString("filePath", "def");
-        index = sharedPreferences.getInt("index", 0);
-        duration = sharedPreferences.getLong("duration", 0);
-        source = sharedPreferences.getString("source", "def");
         ComponentName mediaButtonReceiver = new ComponentName(
                 this,
                 MediaButtonReceiver.class
@@ -197,14 +192,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 updatePlaybackState(PlaybackStateCompat.STATE_PAUSED, exoPlayer.getCurrentPosition(), true);
                 currentPosition = exoPlayer.getCurrentPosition();
                 playPauseButton.setImageResource(R.drawable.play);
-                switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
-                    case AUDIO:
-                        updateMusicRecyclerViewGraphics(true);
-                        break;
-                    case VIDEO:
-                        updateMusicRecyclerViewGraphics(false);
-                        break;
-                }
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -220,14 +207,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     startForeground();
                     playPauseButton.setImageResource(R.drawable.pause);
                     requestAudioFocus();
-                    switch (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def"))) {
-                        case AUDIO:
-                            updateMusicRecyclerViewGraphics(true);
-                            break;
-                        case VIDEO:
-                            updateMusicRecyclerViewGraphics(false);
-                            break;
-                    }
                 } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -249,11 +228,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("title", audioData.get(index).getMusicTitle())
                             .putString("filePath", audioData.get(index).getFileUrl())
                             .putLong("duration", audioData.get(index).getDuration())
+                            .putString("artist", audioData.get(index).getArtist())
                             .putString("action", "AUDIO_NEXT")
                             .putInt("index", index).apply();
-                    /*if (null != audioPlayerAdapter) {
+                    if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
-                    }*/
+                    }
                     if (null != playerActivity)
                         playerActivity.recreate();
                     break;
@@ -267,6 +247,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("filePath", videoDataArrayList.get(index).getUrl())
                             .putLong("duration", videoDataArrayList.get(index).getDuration())
                             .putInt("index", index)
+                            .putString("artist", videoDataArrayList.get(index).getTitle())
                             .putString("action", "VIDEO_NEXT")
                             .apply();
                     if (null != audioPlayerAdapter) {
@@ -275,6 +256,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     break;
             }
             isPaused = true;
+            currentPosition = 0;
             onPlay();
         }
 
@@ -293,11 +275,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("title", audioData.get(index).getMusicTitle())
                             .putString("filePath", audioData.get(index).getFileUrl())
                             .putLong("duration", audioData.get(index).getDuration())
+                            .putString("artist", audioData.get(index).getArtist())
                             .putString("action", "AUDIO_PREV")
                             .putInt("index", index).apply();
-                    /*if (null != audioPlayerAdapter) {
+                    if (null != audioPlayerAdapter) {
                         updateMusicRecyclerViewGraphics(true);
-                    }*/
+                    }
                     if (null != playerActivity)
                         playerActivity.recreate();
                     break;
@@ -310,6 +293,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                             .putString("title", videoDataArrayList.get(index).getTitle())
                             .putString("filePath", videoDataArrayList.get(index).getUrl())
                             .putLong("duration", videoDataArrayList.get(index).getDuration())
+                            .putString("artist", videoDataArrayList.get(index).getTitle())
                             .putString("action", "VIDEO_PREV")
                             .putInt("index", index).apply();
                     if (null != audioPlayerAdapter) {
@@ -318,6 +302,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     break;
             }
             isPaused = true;
+            currentPosition = 0;
             onPlay();
         }
 
@@ -338,7 +323,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
         filePath = sharedPreferences.getString("filePath", "def");
         index = sharedPreferences.getInt("index", 0);
         duration = sharedPreferences.getLong("duration", 0);
-        source = sharedPreferences.getString("soruce", "def");
+        source = sharedPreferences.getString("source", "def");
+        artist = sharedPreferences.getString("artist", "def");
         initiateMedia(filePath);
         Intent intentstop = new Intent(this, PlayerService.class);
         intentstop.setAction(AudioVideoConstants.STOP_FOREGROUND);
@@ -356,8 +342,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
         }
         getGraphicsBasedOnVideo();
         Bitmap notificationIcon = getBitmap(filePath);
-        updateMetadata(title, title, notificationIcon, duration);
+        updateMetadata(title, artist, notificationIcon, duration);
         startForeground(1, getNotification());
+        sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
     }
 
     public void stopForegroundNotification(int startId) {

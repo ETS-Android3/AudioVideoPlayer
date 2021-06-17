@@ -36,6 +36,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation "androidx.biometric:biometric:1.0.1"
     implementation 'com.github.kapilmhr:AlphabetIndexFastScrollRecyclerview:1.0.0'
     implementation 'com.google.android.exoplayer:exoplayer:2.12.0'
     implementation 'com.google.android.exoplayer:exoplayer-core:2.12.0'

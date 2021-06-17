@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">AudioVideoPlayer</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="open">OPEN</string>
+    <string name="close">CLOSE</string>
+    <string name="unlock_with_fingerprint">Unlock with Fingerprint</string>
 </resources>
