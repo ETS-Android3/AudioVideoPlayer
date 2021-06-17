@@ -76,10 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 super.onDrawerOpened(drawerView);
                 playGif();
                 fingerPrint = findViewById(R.id.fingerprint);
-                if (Preferences.getSharedPreferences(getApplicationContext()).getBoolean("FingerPrintLockStatus", false))
-                    fingerPrint.setChecked(true);
-                else
-                    fingerPrint.setChecked(false);
+                fingerPrint.setChecked(Preferences.getSharedPreferences(getApplicationContext()).getBoolean("FingerPrintLockStatus", false));
             }
         };
         drawerLayout.addDrawerListener(drawerToggle);
@@ -101,12 +98,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void getFingerPrintStatus() {
-        if (Preferences.getSharedPreferences(getApplicationContext()).getBoolean("FingerPrintLockStatus", false)) {
-            showFingerPrint();
+    public boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG, "Permission is granted");
+                return true;
+            } else {
+                Log.v(TAG, "Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
         } else {
-            if (isStoragePermissionGranted())
-                initiateTabs();
+            Log.v(TAG, "Permission is granted");
+            return true;
         }
     }
 
@@ -118,6 +123,15 @@ public class MainActivity extends AppCompatActivity {
         } else
             Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
 
+    }
+
+    public void getFingerPrintStatus() {
+        if (Preferences.getSharedPreferences(getApplicationContext()).getBoolean("FingerPrintLockStatus", false)) {
+            showFingerPrint();
+        } else {
+            if (isStoragePermissionGranted())
+                initiateTabs();
+        }
     }
 
     public void showFingerPrint() {
@@ -168,49 +182,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public boolean isStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG, "Permission is granted");
-                return true;
-            } else {
-                Log.v(TAG, "Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                return false;
-            }
-        } else {
-            Log.v(TAG, "Permission is granted");
-            return true;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0]);
-            getFingerPrintStatus();
-        } else {
-            Toast.makeText(getApplicationContext(), "Please provide storage access to proceed further", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    drawerLayout.openDrawer(GravityCompat.START);
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
     public void playGif() {
         navImageView = findViewById(R.id.nav_image_view);
         if (null != navImageView) {
@@ -241,6 +212,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * method to return whether device has screen lock enabled or not
+     */
+    private boolean isDeviceSecure() {
+        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        return keyguardManager.isKeyguardSecure();
+    }
+
     private void authenticateApp() {
         if (isDeviceSecure()) {
             KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
@@ -264,6 +243,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0]);
+            getFingerPrintStatus();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please provide storage access to proceed further", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
@@ -284,14 +290,6 @@ public class MainActivity extends AppCompatActivity {
                         initiateTabs();
                 }
         }
-    }
-
-    /**
-     * method to return whether device has screen lock enabled or not
-     */
-    private boolean isDeviceSecure() {
-        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-        return keyguardManager.isKeyguardSecure();
     }
 
     @Override
