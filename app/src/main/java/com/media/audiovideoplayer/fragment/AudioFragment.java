@@ -1,6 +1,6 @@
 package com.media.audiovideoplayer.fragment;
 
-import static com.media.audiovideoplayer.activity.MainActivity.mainActivity;
+import static com.media.audiovideoplayer.activity.MainActivity.swipeRefreshLayout;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -45,7 +45,7 @@ public class AudioFragment extends Fragment {
                 if (!songsList.isEmpty())
                     audioPlayerAdapter = new AudioPlayerAdapter(songsList, getActivity(), getContext());
                 else
-                    Snackbar.make(mainActivity, "No Files to be Loaded", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(swipeRefreshLayout, "No Files to be Loaded", Snackbar.LENGTH_LONG).show();
                 musicRecyclerView.setAdapter(audioPlayerAdapter);
                 musicRecyclerView.setIndexBarVisibility(true);
             }

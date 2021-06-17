@@ -415,8 +415,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
                                 exoPlayer.getCurrentPosition(),
                                 false);
                         break;
-                    case Player.STATE_BUFFERING:
-                        break;
                 }
             }
 

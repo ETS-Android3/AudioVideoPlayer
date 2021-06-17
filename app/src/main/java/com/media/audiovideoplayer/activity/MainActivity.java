@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Permission";
     private static TabLayout tabLayout;
     private static ViewPager viewPager;
-    public static View mainActivity;
+    public static SwipeRefreshLayout swipeRefreshLayout;
     public static Activity mav;
     public DrawerLayout drawerLayout;
     public NavigationView navigationView;
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.view_Pager);
-        mainActivity = findViewById(R.id.mainActivity);
+        swipeRefreshLayout = findViewById(R.id.mainActivity);
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.nav_view);
         mav = this;
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.syncState();
         onNavigationItemClick();
         getFingerPrintStatus();
+        swipeToRefresh();
     }
 
     public void initiateTabs() {
@@ -115,6 +117,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void swipeToRefresh() {
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            initiateTabs();
+            swipeRefreshLayout.setRefreshing(false);
+        });
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                swipeRefreshLayout.setEnabled(false);
+            }
+        });
+    }
+
     public void enableFingerPrint(View v) {
         fingerPrint = findViewById(R.id.fingerprint);
         if (fingerPrint.isChecked()) {
@@ -144,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                                                   @NonNull CharSequence errString) {
                     super.onAuthenticationError(errorCode, errString);
                     Toast.makeText(getApplicationContext(),
-                            "Authentication error: " + errString +": Sorry FingerPrint option will not work unless device is secured", Toast.LENGTH_SHORT)
+                            "Authentication error: " + errString + ": Sorry FingerPrint option will not work unless device is secured", Toast.LENGTH_SHORT)
                             .show();
                     Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
                     if (isStoragePermissionGranted())

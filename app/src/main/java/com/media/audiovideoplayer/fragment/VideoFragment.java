@@ -1,6 +1,6 @@
 package com.media.audiovideoplayer.fragment;
 
-import static com.media.audiovideoplayer.activity.MainActivity.mainActivity;
+import static com.media.audiovideoplayer.activity.MainActivity.swipeRefreshLayout;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -54,7 +54,7 @@ public class VideoFragment extends Fragment {
                 if (!videoData.isEmpty())
                     videoPlayerAdapter = new VideoPlayerAdapter(videoData, getActivity(), getContext());
                 else
-                    Snackbar.make(mainActivity, "No Files to be Loaded", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(swipeRefreshLayout, "No Files to be Loaded", Snackbar.LENGTH_LONG).show();
                 videoPlayerRecyclerView.setAdapter(videoPlayerAdapter);
             }
         }
