@@ -1,6 +1,5 @@
 package com.media.audiovideoplayer.fragment;
 
-import static com.media.audiovideoplayer.activity.MainActivity.swipeRefreshLayout;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -9,12 +8,12 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
 import com.media.audiovideoplayer.datamodel.AudioData;
@@ -45,7 +44,7 @@ public class AudioFragment extends Fragment {
                 if (!songsList.isEmpty())
                     audioPlayerAdapter = new AudioPlayerAdapter(songsList, getActivity(), getContext());
                 else
-                    Snackbar.make(swipeRefreshLayout, "No Files to be Loaded", Snackbar.LENGTH_LONG).show();
+                    Toast.makeText(getContext(),"No Music Files to be loaded",Toast.LENGTH_LONG).show();
                 musicRecyclerView.setAdapter(audioPlayerAdapter);
                 musicRecyclerView.setIndexBarVisibility(true);
             }

@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Permission";
     private static TabLayout tabLayout;
     private static ViewPager viewPager;
-    public static SwipeRefreshLayout swipeRefreshLayout;
+    public SwipeRefreshLayout swipeRefreshLayout;
     public static Activity mav;
     public DrawerLayout drawerLayout;
     public NavigationView navigationView;

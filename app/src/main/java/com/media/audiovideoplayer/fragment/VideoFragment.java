@@ -1,6 +1,5 @@
 package com.media.audiovideoplayer.fragment;
 
-import static com.media.audiovideoplayer.activity.MainActivity.swipeRefreshLayout;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -13,13 +12,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.adapter.VideoPlayerAdapter;
 import com.media.audiovideoplayer.datamodel.VideoData;
@@ -54,7 +52,7 @@ public class VideoFragment extends Fragment {
                 if (!videoData.isEmpty())
                     videoPlayerAdapter = new VideoPlayerAdapter(videoData, getActivity(), getContext());
                 else
-                    Snackbar.make(swipeRefreshLayout, "No Files to be Loaded", Snackbar.LENGTH_LONG).show();
+                    Toast.makeText(getContext(),"No Video Files to be loaded",Toast.LENGTH_LONG).show();
                 videoPlayerRecyclerView.setAdapter(videoPlayerAdapter);
             }
         }
