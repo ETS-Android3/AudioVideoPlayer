@@ -54,9 +54,6 @@ public class MainActivity extends AppCompatActivity {
     public ImageView navImageView;
     public ActionBarDrawerToggle drawerToggle;
     public SwitchCompat fingerPrint;
-    private Executor executor;
-    private BiometricPrompt biometricPrompt;
-    private BiometricPrompt.PromptInfo promptInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
     public void enableFingerPrint(View v) {
         fingerPrint = findViewById(R.id.fingerprint);
         if (fingerPrint.isChecked()) {
-            Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", true).apply();
             showFingerPrint();
         } else
             Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
@@ -160,20 +156,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showFingerPrint() {
+        if (!isDeviceSecured()) {
+            Toast.makeText(getApplicationContext(), "Sorry Authentication will not work unless device is secured", Toast.LENGTH_LONG).show();
+            Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
+            if (null != fingerPrint)
+                fingerPrint.setChecked(Preferences.getSharedPreferences(getApplicationContext()).getBoolean("FingerPrintLockStatus", false));
+            return;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            executor = ContextCompat.getMainExecutor(this);
-            biometricPrompt = new BiometricPrompt(MainActivity.this,
+            Executor executor = ContextCompat.getMainExecutor(this);
+            BiometricPrompt biometricPrompt = new BiometricPrompt(MainActivity.this,
                     executor, new BiometricPrompt.AuthenticationCallback() {
                 @Override
                 public void onAuthenticationError(int errorCode,
                                                   @NonNull CharSequence errString) {
                     super.onAuthenticationError(errorCode, errString);
                     Toast.makeText(getApplicationContext(),
-                            "Authentication error: " + errString + ": Sorry FingerPrint option will not work unless device is secured", Toast.LENGTH_SHORT)
+                            "Authentication error: " + errString, Toast.LENGTH_SHORT)
                             .show();
-                    Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
-                    if (isStoragePermissionGranted())
-                        initiateTabs();
                 }
 
                 @Override
@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     super.onAuthenticationSucceeded(result);
                     Toast.makeText(getApplicationContext(),
                             "Authentication succeeded!", Toast.LENGTH_SHORT).show();
+                    Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", true).apply();
                     if (isStoragePermissionGranted())
                         initiateTabs();
                 }
@@ -196,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            promptInfo = new BiometricPrompt.PromptInfo.Builder()
+            BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
                     .setTitle("Verify your identity")
                     .setSubtitle("Use your fingerprint to verify your identity")
                     .setDeviceCredentialAllowed(true)
@@ -240,13 +241,13 @@ public class MainActivity extends AppCompatActivity {
     /**
      * method to return whether device has screen lock enabled or not
      */
-    private boolean isDeviceSecure() {
+    private boolean isDeviceSecured() {
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         return keyguardManager.isKeyguardSecure();
     }
 
     private void authenticateApp() {
-        if (isDeviceSecure()) {
+        if (isDeviceSecured()) {
             KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
             Intent keyGuardIntent = keyguardManager.createConfirmDeviceCredentialIntent("Unlock", "Confirm PIN");
             try {
@@ -260,10 +261,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } else {
-            Toast.makeText(getApplicationContext(), "Sorry FingerPrint option will not work unless device is secured", Toast.LENGTH_SHORT).show();
+            /*Toast.makeText(getApplicationContext(), "Sorry FingerPrint option will not work unless device is secured", Toast.LENGTH_SHORT).show();
             Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
             if (isStoragePermissionGranted())
-                initiateTabs();
+                initiateTabs();*/
+            Toast.makeText(getApplicationContext(), "Sorry Authentication Failed", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -306,10 +308,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Successfully authenticated!!", Toast.LENGTH_LONG).show();
                 break;
             case 456:
-                if (isDeviceSecure()) {
+                if (isDeviceSecured()) {
                     authenticateApp();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Sorry FingerPrint option will not work unless device is secured", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Sorry Authentication Failed", Toast.LENGTH_SHORT).show();
                     Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
                     if (isStoragePermissionGranted())
                         initiateTabs();

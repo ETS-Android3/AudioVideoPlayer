@@ -1,17 +1,16 @@
 package com.media.audiovideoplayer.adapter;
 
+import static com.media.audiovideoplayer.constants.AudioVideoConstants.ALBUM_ART;
 import static com.media.audiovideoplayer.service.PlayerService.currentPosition;
 import static com.media.audiovideoplayer.service.PlayerService.exoPlayer;
 import static com.media.audiovideoplayer.service.PlayerService.isPaused;
 import static com.media.audiovideoplayer.service.PlayerService.mediaControllerCompat;
 
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
@@ -20,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
 import com.media.audiovideoplayer.constants.AudioVideoConstants;
@@ -63,7 +64,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull AudioHolder holder, int position) {
-        holder.bindAudioData(audioData.get(position).getMusicTitle(), audioData.get(position).getArtist(), audioData.get(position).getFileUrl());
+        holder.bindAudioData(audioData.get(position).getMusicTitle(), audioData.get(position).getArtist(), audioData.get(position).getAlbumArt());
 
         //Updating Currently playing song gif dynamically
         if (selectedPosition == position) {
@@ -141,6 +142,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         private final ImageView music_gif;
         private TextView menu;
         private SharedPreferences sharedPreferences;
+        private RelativeLayout relativeLayout;
 
         public AudioHolder(@NonNull View itemView) {
             super(itemView);
@@ -149,7 +151,8 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             artist_text_view = itemView.findViewById(R.id.music_item_artist);
             menu = itemView.findViewById(R.id.music_card_menu);
             music_gif = itemView.findViewById(R.id.music_gif);
-            itemView.setOnClickListener(v -> {
+            relativeLayout = itemView.findViewById(R.id.relative_music_layout);
+            relativeLayout.setOnClickListener(v -> {
                 sharedPreferences = Preferences.getSharedPreferences(context);
                 Intent playerActivityIntent = new Intent(context, PlayerActivity.class);
                 Intent playerService = new Intent(context, PlayerService.class);
@@ -188,40 +191,26 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
             artist_text_view.setText(artist);
             title_text_view.setSelected(true);
             artist_text_view.setSelected(true);
-            new ImageLoader().execute(fileUrl);
+            new ImageLoader().execute(getAlbumArt(fileUrl));
         }
 
-        public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
-            Bitmap icon;
+        public Uri getAlbumArt(String fileUrl) {
+            final Uri albumUri = Uri.parse(ALBUM_ART);
+            return ContentUris.withAppendedId(albumUri, Long.parseLong(fileUrl));
+        }
 
+        public class ImageLoader extends AsyncTask<Uri, Void, Uri> {
+            Uri icon;
             @Override
-            protected Bitmap doInBackground(String... strings) {
-                icon = getImage(strings[0]);
+            protected Uri doInBackground(Uri... strings) {
+                icon = strings[0];
                 return icon;
             }
 
             @Override
-            protected void onPostExecute(Bitmap bitmap) {
+            protected void onPostExecute(Uri bitmap) {
                 super.onPostExecute(bitmap);
-                audioImageView.setImageBitmap(icon);
-            }
-
-            public Bitmap getImage(String fileUrl) {
-                MediaMetadataRetriever retriever;
-                Bitmap icon;
-                try {
-                    retriever = new MediaMetadataRetriever();
-                    retriever.setDataSource(fileUrl);
-                    byte[] data = retriever.getEmbeddedPicture();
-                    if (data != null) {
-                        icon = BitmapFactory.decodeByteArray(data, 0, data.length);
-                    } else {
-                        icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.music_image);
-                    }
-                } catch (Exception e) {
-                    icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.music_image);
-                }
-                return icon;
+                Glide.with(context).load(bitmap).error(R.drawable.music_image).diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false).into(audioImageView);
             }
         }
     }

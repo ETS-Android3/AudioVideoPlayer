@@ -8,6 +8,7 @@
     app:cardCornerRadius="15dp">
 
     <RelativeLayout
+        android:id="@+id/relative_music_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="5dp">
@@ -59,26 +60,31 @@
             android:text="Line 1"
             android:textSize="12sp"
             android:textStyle="bold" />
+    </RelativeLayout>
 
-        <TextView
-            android:id="@+id/music_card_menu"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="15dp"
-            android:layout_marginEnd="25dp"
-            android:rotation="360"
-            android:text="&#8942;"
-            android:textSize="35sp" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|end"
+        android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/music_gif"
             android:layout_width="25dp"
             android:layout_height="50dp"
-            android:layout_centerVertical="true"
+            android:layout_gravity="center"
             android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp" />
+
+        <TextView
+            android:id="@+id/music_card_menu"
+            android:layout_width="30sp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:layout_marginEnd="20dp"
-            android:layout_toStartOf="@+id/music_card_menu" />
-    </RelativeLayout>
+            android:rotation="360"
+            android:text="&#8942;"
+            android:textSize="30sp" />
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

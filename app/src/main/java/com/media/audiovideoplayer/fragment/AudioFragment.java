@@ -44,7 +44,7 @@ public class AudioFragment extends Fragment {
                 if (!songsList.isEmpty())
                     audioPlayerAdapter = new AudioPlayerAdapter(songsList, getActivity(), getContext());
                 else
-                    Toast.makeText(getContext(),"No Music Files to be loaded",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "No Music Files to be loaded", Toast.LENGTH_LONG).show();
                 musicRecyclerView.setAdapter(audioPlayerAdapter);
                 musicRecyclerView.setIndexBarVisibility(true);
             }
@@ -62,7 +62,8 @@ public class AudioFragment extends Fragment {
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.DATA,
                 MediaStore.Audio.Media.DISPLAY_NAME,
-                MediaStore.Audio.Media.DURATION};
+                MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Albums.ALBUM_ID};
 
         Cursor cursor = contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -76,7 +77,7 @@ public class AudioFragment extends Fragment {
                     cursor.getString(2),
                     cursor.getString(1),
                     cursor.getString(3),
-                    cursor.getLong(5));
+                    cursor.getLong(5), cursor.getString(6));
            /* if (audioModel.getMusicTitle().toLowerCase(Locale.ROOT).contains("over")) {
 
             }*/
