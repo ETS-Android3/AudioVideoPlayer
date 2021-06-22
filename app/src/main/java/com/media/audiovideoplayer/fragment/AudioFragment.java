@@ -52,6 +52,11 @@ public class AudioFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Method used for loading songs to internal storage
+     * @return
+     */
+
     private ArrayList<AudioData> loadSongsFromInternalStorage() {
         audioModels = new ArrayList<>();
         ContentResolver contentResolver = getContext().getContentResolver();
@@ -85,8 +90,6 @@ public class AudioFragment extends Fragment {
             index++;
         }
         cursor.close();
-        swipeRefreshLayout.setRefreshing(false);
-        swipeRefreshLayout.setEnabled(false);
         return audioModels;
     }
 }

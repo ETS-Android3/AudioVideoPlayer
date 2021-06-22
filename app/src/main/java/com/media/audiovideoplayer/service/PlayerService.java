@@ -124,7 +124,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 MediaButtonReceiver.class
         );
         mediaSession =
-                new MediaSessionCompat(this, "MediaSession", mediaButtonReceiver, null);
+                new MediaSessionCompat(this, "AudioVideoPlayerMediaSession", mediaButtonReceiver, null);
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         mediaSession.setCallback(mediaSessionCallBack);
 
@@ -153,8 +153,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
         playbackStateCompat.setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS | PlaybackStateCompat.ACTION_SEEK_TO);
         sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
         registerNoisyReceiver();
-        requestAudioFocus();
+        enableAudioFocus();
     }
+
+    /**
+     * Method to register noisy receiver
+     */
 
     void registerNoisyReceiver() {
         if (!isNoisyRecieverRegistered) {
@@ -163,12 +167,21 @@ public class PlayerService extends MediaBrowserServiceCompat {
         }
     }
 
+    /**
+     * Method to initialize audio attributes
+     * @return
+     */
+
     private AudioAttributes getAudioAttributes() {
         return new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build();
     }
+
+    /**
+     * Broadcast receiver to pause the playback if the bluetooth is disconnected
+     */
 
     private final BroadcastReceiver audioNoisyReciever = new BroadcastReceiver() {
         @Override
@@ -206,7 +219,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 try {
                     startForeground();
                     playPauseButton.setImageResource(R.drawable.pause);
-                    requestAudioFocus();
+                    enableAudioFocus();
                 } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -318,6 +331,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
         }
     };
 
+    /**
+     * Method to start Foreground notification
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+
     public void startForeground() throws ExecutionException, InterruptedException {
         title = sharedPreferences.getString("title", "def");
         filePath = sharedPreferences.getString("filePath", "def");
@@ -331,14 +350,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
         stopIntent =
                 PendingIntent.getService(this, 0, intentstop, PendingIntent.FLAG_CANCEL_CURRENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel chan = new NotificationChannel(
+            NotificationChannel notificationChannel = new NotificationChannel(
                     NOTIFICATION_CHANNEL_ID,
                     NOTIFICATION_CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_DEFAULT
             );
             NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             // build notification channel
-            manager.createNotificationChannel(chan);
+            manager.createNotificationChannel(notificationChannel);
         }
         getGraphicsBasedOnVideo();
         Bitmap notificationIcon = getBitmap(filePath);
@@ -347,6 +366,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
         sharedPreferences.edit().putBoolean("serviceStatus", true).apply();
     }
 
+    /**
+     * Method to stop Foreground notification
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     public void stopForegroundNotification(int startId) {
         exoPlayer.setPlayWhenReady(false);
         exoPlayer.seekTo(0);
@@ -370,6 +394,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
         stopSelf(startId);
         sharedPreferences.edit().putBoolean("serviceStatus", false).apply();
     }
+
+    /**
+     * Method to initiate media playback
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
 
     public void initiateMedia(String url) {
         loadControl = new DefaultLoadControl.Builder().build();
@@ -428,6 +458,13 @@ public class PlayerService extends MediaBrowserServiceCompat {
             }
         });
     }
+
+    /**
+     * Method to initiate notification
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
 
 
     public Notification getNotification() throws ExecutionException, InterruptedException {
@@ -489,6 +526,10 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     }
 
+    /**
+     * Method to update recycler view graphics
+     */
+
     void getGraphicsBasedOnVideo() {
         if (AudioVideoEnum.valueOf(sharedPreferences.getString("source", "def")) == AudioVideoEnum.VIDEO) {
             if (null != audioPlayerAdapter) {
@@ -501,6 +542,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
         selectedPosition = (isValidSongIndex) ? sharedPreferences.getInt("index", -1) : -1;
         audioPlayerAdapter.notifyDataSetChanged();
     }
+
+    /**
+     * Method to load bitmap in notification
+     * @param url
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
 
     public Bitmap getBitmap(String url) throws ExecutionException, InterruptedException {
         Bitmap icon = null;
@@ -532,6 +581,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
         return (exoPlayer == null) ? new SimpleExoPlayer.Builder(this).setLoadControl(loadControl).build() : exoPlayer;
     }
 
+    /**
+     * Method to update Metadata
+     * @param title
+     * @param artist
+     * @param bitmap
+     * @param duration
+     */
+
     public void updateMetadata(String title, String artist, Bitmap bitmap, Long duration) {
         this.duration = duration;
         sharedPreferences.edit().putLong("duration", duration).apply();
@@ -546,6 +603,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
         }
     }
 
+    /**
+     * Method to update playback state
+     * @param state
+     * @param currentPosition
+     * @param isActive
+     */
     public void updatePlaybackState(
             Integer state, Long currentPosition,
             Boolean isActive
@@ -555,7 +618,10 @@ public class PlayerService extends MediaBrowserServiceCompat {
         mediaSession.setActive(isActive);
     }
 
-    void requestAudioFocus() {
+    /**
+     * Method used to enabling audio focus for this application
+     */
+    void enableAudioFocus() {
         audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         AudioAttributes audioAttributes = getAudioAttributes();
         audioFocusChangeListener = focusChange -> {
@@ -578,7 +644,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     .setAcceptsDelayedFocusGain(true)
                     .setOnAudioFocusChangeListener(audioFocusChangeListener).build();
         }
-        // Request audio focus for playback
+        // enabling audio focus for playback
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioManager.requestAudioFocus(audioFocusRequest);
         } else {
@@ -586,7 +652,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
         }
     }
 
-    void releaseAudioFocus() {
+    /**
+     * Method used to disabling Audio Focus
+     */
+
+    void disableAudioFocus() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             audioManager.abandonAudioFocusRequest(audioFocusRequest);
         else
@@ -614,9 +684,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
             unregisterReceiver(audioNoisyReciever);
             isNoisyRecieverRegistered = false;
         }
-        releaseAudioFocus();
+        disableAudioFocus();
     }
 
+    /**
+     * Generating Notification Icon for Video Playback
+     */
     public class GenerateIconForVideo extends AsyncTask<String, Void, Bitmap> {
         Bitmap videoIcon;
 

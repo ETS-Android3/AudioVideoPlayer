@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -84,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
         swipeToRefresh();
     }
 
+    /**
+     * Method invoked to Initiate UI
+     */
     public void initiateTabs() {
         try {
             ArrayList<Fragment> fragments = new ArrayList<>();
@@ -97,22 +99,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * To get the status whether storage permission is granted or not
+     *
+     * @return
+     */
     public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(TAG, "Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
                 return false;
             }
         } else {
-            Log.v(TAG, "Permission is granted");
             return true;
         }
     }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            getFingerPrintStatus();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please provide storage access to proceed further", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Method Invoked for Swipe down to refresh the User Interface if UI is not loaded properly
+     */
 
     public void swipeToRefresh() {
         swipeRefreshLayout.setOnRefreshListener(() -> {
@@ -137,6 +156,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Method invoked for enabling authentication
+     *
+     * @param v
+     */
     public void enableFingerPrint(View v) {
         fingerPrint = findViewById(R.id.fingerprint);
         if (fingerPrint.isChecked()) {
@@ -146,6 +170,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Method invoked for getting the status of authentication (enabled or not)
+     */
+
     public void getFingerPrintStatus() {
         if (Preferences.getSharedPreferences(getApplicationContext()).getBoolean("FingerPrintLockStatus", false)) {
             showFingerPrint();
@@ -154,6 +182,10 @@ public class MainActivity extends AppCompatActivity {
                 initiateTabs();
         }
     }
+
+    /**
+     * To show authentication prompt if authentication is enabled
+     */
 
     public void showFingerPrint() {
         if (!isDeviceSecured()) {
@@ -204,9 +236,13 @@ public class MainActivity extends AppCompatActivity {
                     .build();
             biometricPrompt.authenticate(promptInfo);
         } else {
-            authenticateApp();
+            enableAuthentication();
         }
     }
+
+    /*
+    Method used for Showing Gif in Drawer Layout
+     */
 
     public void playGif() {
         navImageView = findViewById(R.id.nav_image_view);
@@ -239,44 +275,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * method to return whether device has screen lock enabled or not
+     * method to return whether device is secured or not
      */
     private boolean isDeviceSecured() {
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         return keyguardManager.isKeyguardSecure();
     }
 
-    private void authenticateApp() {
+    /**
+     * Method invoked for authenticating app for android versions below Q
+     */
+
+    private void enableAuthentication() {
         if (isDeviceSecured()) {
             KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-            Intent keyGuardIntent = keyguardManager.createConfirmDeviceCredentialIntent("Unlock", "Confirm PIN");
+            Intent keyguardManagerConfirmDeviceCredentialIntent = keyguardManager.createConfirmDeviceCredentialIntent("Unlock", "Confirm PIN");
             try {
-                startActivityForResult(keyGuardIntent, 123);
+                startActivityForResult(keyguardManagerConfirmDeviceCredentialIntent, 123);
             } catch (Exception e) {
-                Intent securityIntent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+                Intent securitySettings = new Intent(Settings.ACTION_SECURITY_SETTINGS);
                 try {
-                    startActivityForResult(securityIntent, 456);
+                    startActivityForResult(securitySettings, 456);
                 } catch (Exception ex) {
                     Toast.makeText(getApplicationContext(), "Sorry Authentication Failed", Toast.LENGTH_SHORT).show();
                 }
             }
         } else {
-            /*Toast.makeText(getApplicationContext(), "Sorry FingerPrint option will not work unless device is secured", Toast.LENGTH_SHORT).show();
-            Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();
-            if (isStoragePermissionGranted())
-                initiateTabs();*/
             Toast.makeText(getApplicationContext(), "Sorry Authentication Failed", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0]);
-            getFingerPrintStatus();
-        } else {
-            Toast.makeText(getApplicationContext(), "Please provide storage access to proceed further", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -305,11 +330,12 @@ public class MainActivity extends AppCompatActivity {
                     if (isStoragePermissionGranted())
                         initiateTabs();
                 }
+                Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", true).apply();
                 Toast.makeText(getApplicationContext(), "Successfully authenticated!!", Toast.LENGTH_LONG).show();
                 break;
             case 456:
                 if (isDeviceSecured()) {
-                    authenticateApp();
+                    enableAuthentication();
                 } else {
                     Toast.makeText(getApplicationContext(), "Sorry Authentication Failed", Toast.LENGTH_SHORT).show();
                     Preferences.getSharedPreferences(getApplicationContext()).edit().putBoolean("FingerPrintLockStatus", false).apply();

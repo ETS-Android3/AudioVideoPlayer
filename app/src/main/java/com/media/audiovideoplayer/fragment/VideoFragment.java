@@ -87,7 +87,10 @@ public class VideoFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-
+    /**
+     * Loading Videos from Internal Storage
+     * @return
+     */
     public ArrayList<VideoData> loadVideosFromInternalStorage() {
         videoDataArrayList = new ArrayList<>();
         ContentResolver contentResolver = getContext().getContentResolver();

@@ -69,6 +69,10 @@ public class PlayerActivity extends AppCompatActivity {
         handleTouchEvent();
     }
 
+    /**
+     * Method used for Initiating Player Activity UI
+     */
+
     public void initiatePlayerUI() {
         if (null != exoPlayer) {
             if (exoPlayer.getPlayWhenReady()) {
@@ -102,6 +106,10 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Method invoked for handling touch events in player activity
+     */
+
     public void handleTouchEvent() {
         playerView.setOnTouchListener((v, event) -> {
             playerControl.setVisibility(View.VISIBLE);
@@ -126,6 +134,10 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Method used for handling next previous button click
+     */
+
     public void handleNextPrevButtonClick() {
         playPauseButton.setOnClickListener(v -> {
             if (exoPlayer.getPlayWhenReady()) {
@@ -144,6 +156,10 @@ public class PlayerActivity extends AppCompatActivity {
         });
 
     }
+
+    /**
+     * Method used for handling fullscreen
+     */
 
     public void handleFullScreen() {
         if (fullscreen) {
@@ -167,6 +183,9 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Method used for stretching the video to fullscreen
+     */
     public void stretchVideo() {
         stretchVideo.setOnClickListener(v -> {
             if (isVideoStretched) {
@@ -180,6 +199,10 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * Method used addFullScreen Functionality
+     */
 
     public void addFunctionalityFullScreen() {
         fullScreenButton.setOnClickListener(v -> {
@@ -207,9 +230,17 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Method to show or hide player control
+     */
+
     public void showOrHideUIControl() {
         playerControl.setVisibility(View.INVISIBLE);
     }
+
+    /**
+     * Method used for loading the video asynchronously
+     */
 
     public class PlayMedia extends AsyncTask<Void, Void, Void> {
 
@@ -228,6 +259,12 @@ public class PlayerActivity extends AppCompatActivity {
             stretchVideo();
         }
     }
+
+    /**
+     * Method used for loading album art for audio files
+     * @param fileUrl
+     * @return
+     */
 
     public Bitmap getBitmapImage(String fileUrl) {
         MediaMetadataRetriever retriever;
