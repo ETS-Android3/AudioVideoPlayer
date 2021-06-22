@@ -13,6 +13,8 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,17 +31,29 @@ import com.media.audiovideoplayer.service.PlayerService;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.VideoHolder> {
+public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.VideoHolder> implements Filterable {
 
 
     public static ArrayList<VideoData> videoDataArrayList;
-    private final Activity av;
-    private final Context context;
+    ArrayList<VideoData> videoDataAll;
+    private Activity av;
+    private Context context;
     private SharedPreferences sharedPreferences;
+    public static VideoPlayerAdapter videoPlayerAdapter;
+
+    public VideoPlayerAdapter()
+    {
+        //Default Constructor
+    }
+
 
     public VideoPlayerAdapter(ArrayList<VideoData> videoData, Activity activity, Context context) {
         videoDataArrayList = videoData;
+        videoPlayerAdapter=this;
+        this.videoDataAll = new ArrayList<>(videoDataArrayList);
         this.av = activity;
         this.context = context;
 
@@ -69,6 +83,38 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
     public int getItemCount() {
         return videoDataArrayList.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            ArrayList<VideoData> filteredList = new ArrayList<>();
+            if (charSequence.toString().isEmpty()) {
+                filteredList.addAll(videoDataAll);
+            } else {
+                for (VideoData video : videoDataAll) {
+                    if (video.getDisplayName().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                        filteredList.add(video);
+                    }
+                }
+            }
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filteredList;
+            filterResults.count=filteredList.size();
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            videoDataArrayList.addAll((ArrayList<VideoData>) filterResults.values);
+            notifyDataSetChanged();
+        }
+    };
+
 
     public class VideoHolder extends RecyclerView.ViewHolder {
         private final TextView textView;

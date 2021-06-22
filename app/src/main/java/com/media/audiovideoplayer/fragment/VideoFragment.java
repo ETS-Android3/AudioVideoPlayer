@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -64,9 +65,23 @@ public class VideoFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.change_layout, menu);
         if (isGridViewChanged)
-            menu.getItem(0).setIcon(R.drawable.grid_view);
+            menu.getItem(1).setIcon(R.drawable.grid_view);
         else
-            menu.getItem(0).setIcon(R.drawable.list_view);
+            menu.getItem(1).setIcon(R.drawable.list_view);
+        MenuItem item = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) item.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                videoPlayerAdapter.getFilter().filter(newText);
+                return true;
+            }
+        });
     }
 
     @Override
