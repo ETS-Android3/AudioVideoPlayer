@@ -12,7 +12,6 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
 
     private List<Fragment> mFragmentList;
-    private final static String CLASS_NAME = "com.media.radiomusicplayer.ViewPagerAdapter";
 
     public ViewPagerAdapter(FragmentManager fm, List<Fragment> fragment) {
         super(fm);

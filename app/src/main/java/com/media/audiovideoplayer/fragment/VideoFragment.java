@@ -53,7 +53,7 @@ public class VideoFragment extends Fragment {
                 if (!videoData.isEmpty())
                     videoPlayerAdapter = new VideoPlayerAdapter(videoData, getActivity(), getContext());
                 else
-                    Toast.makeText(getContext(),"No Video Files to be loaded",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "No Video Files to be loaded", Toast.LENGTH_LONG).show();
                 videoPlayerRecyclerView.setAdapter(videoPlayerAdapter);
             }
         }
@@ -68,20 +68,6 @@ public class VideoFragment extends Fragment {
             menu.getItem(1).setIcon(R.drawable.grid_view);
         else
             menu.getItem(1).setIcon(R.drawable.list_view);
-        MenuItem item = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) item.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                videoPlayerAdapter.getFilter().filter(newText);
-                return true;
-            }
-        });
     }
 
     @Override
@@ -98,12 +84,27 @@ public class VideoFragment extends Fragment {
                 item.setIcon(R.drawable.list_view);
                 isGridViewChanged = false;
             }
+        } else if (item.getItemId() == R.id.action_search) {
+            SearchView searchView = (SearchView) item.getActionView();
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    videoPlayerAdapter.getFilter().filter(newText);
+                    return true;
+                }
+            });
         }
         return super.onOptionsItemSelected(item);
     }
 
     /**
      * Loading Videos from Internal Storage
+     *
      * @return
      */
     public ArrayList<VideoData> loadVideosFromInternalStorage() {

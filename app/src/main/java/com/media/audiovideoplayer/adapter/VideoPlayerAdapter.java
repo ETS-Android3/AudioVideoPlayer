@@ -31,8 +31,6 @@ import com.media.audiovideoplayer.service.PlayerService;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.VideoHolder> implements Filterable {
 
@@ -42,17 +40,10 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
     private Activity av;
     private Context context;
     private SharedPreferences sharedPreferences;
-    public static VideoPlayerAdapter videoPlayerAdapter;
-
-    public VideoPlayerAdapter()
-    {
-        //Default Constructor
-    }
 
 
     public VideoPlayerAdapter(ArrayList<VideoData> videoData, Activity activity, Context context) {
         videoDataArrayList = videoData;
-        videoPlayerAdapter=this;
         this.videoDataAll = new ArrayList<>(videoDataArrayList);
         this.av = activity;
         this.context = context;
@@ -97,19 +88,20 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
                 filteredList.addAll(videoDataAll);
             } else {
                 for (VideoData video : videoDataAll) {
-                    if (video.getDisplayName().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                    if (video.getDisplayName().trim().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                         filteredList.add(video);
                     }
                 }
             }
             FilterResults filterResults = new FilterResults();
             filterResults.values = filteredList;
-            filterResults.count=filteredList.size();
+            filterResults.count = filteredList.size();
             return filterResults;
         }
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            videoDataArrayList.clear();
             videoDataArrayList.addAll((ArrayList<VideoData>) filterResults.values);
             notifyDataSetChanged();
         }
