@@ -1,5 +1,6 @@
 package com.media.audiovideoplayer.activity;
 
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Permission";
     private static TabLayout tabLayout;
     private static ViewPager viewPager;
-    public SwipeRefreshLayout swipeRefreshLayout;
+    public static SwipeRefreshLayout swipeRefreshLayout;
     public static Activity mav;
     public DrawerLayout drawerLayout;
     public NavigationView navigationView;
@@ -257,8 +259,6 @@ public class MainActivity extends AppCompatActivity {
     public void onNavigationItemClick() {
         navigationView.setNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
-                case R.id.sleepTimer:
-                    break;
                 case R.id.about:
                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
                     alertDialogBuilder.setView(R.layout.layout_about);
@@ -272,8 +272,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.setAction(AudioVideoConstants.STOP_FOREGROUND);
                     if (Preferences.getSharedPreferences(getApplicationContext()).getBoolean("serviceStatus", false))
                         startService(intent);
-                    else
-                        Toast.makeText(getApplicationContext(), "Sorry the player cannot be stopped", Toast.LENGTH_LONG).show();
+                    finishAndRemoveTask();
                     break;
             }
             drawerLayout.closeDrawer(GravityCompat.START);

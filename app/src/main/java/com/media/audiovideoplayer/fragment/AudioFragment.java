@@ -22,6 +22,7 @@ import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
 import com.media.audiovideoplayer.datamodel.AudioData;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import fastscroll.app.fastscrollalphabetindex.AlphabetIndexFastScrollRecyclerView;
 
@@ -73,16 +74,17 @@ public class AudioFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (null!= audioPlayerAdapter)
+                if (null != audioPlayerAdapter)
                     audioPlayerAdapter.getFilter().filter(newText);
                 return false;
             }
         });
-        super.onCreateOptionsMenu(menu,inflater);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     /**
      * Method used for loading songs from internal storage
+     *
      * @return
      */
 
@@ -112,9 +114,6 @@ public class AudioFragment extends Fragment {
                     cursor.getString(1),
                     cursor.getString(3),
                     cursor.getLong(5), cursor.getString(6));
-           /* if (audioModel.getMusicTitle().toLowerCase(Locale.ROOT).contains("over")) {
-
-            }*/
             audioModels.add(audioModel);
             index++;
         }

@@ -169,6 +169,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to initialize audio attributes
+     *
      * @return
      */
 
@@ -333,6 +334,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to start Foreground notification
+     *
      * @throws ExecutionException
      * @throws InterruptedException
      */
@@ -368,6 +370,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to stop Foreground notification
+     *
      * @throws ExecutionException
      * @throws InterruptedException
      */
@@ -397,6 +400,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to initiate media playback
+     *
      * @throws ExecutionException
      * @throws InterruptedException
      */
@@ -461,6 +465,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to initiate notification
+     *
      * @return
      * @throws ExecutionException
      * @throws InterruptedException
@@ -545,6 +550,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to load bitmap in notification
+     *
      * @param url
      * @return
      * @throws ExecutionException
@@ -583,6 +589,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to update Metadata
+     *
      * @param title
      * @param artist
      * @param bitmap
@@ -605,6 +612,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
     /**
      * Method to update playback state
+     *
      * @param state
      * @param currentPosition
      * @param isActive

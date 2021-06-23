@@ -3,10 +3,6 @@
     <item android:title="Settings">
         <menu>
             <item
-                android:id="@+id/sleepTimer"
-                android:icon="@drawable/sleep_timer"
-                android:title="Sleep Timer" />
-            <item
                 android:id="@+id/about"
                 android:icon="@drawable/about"
                 android:title="About" />

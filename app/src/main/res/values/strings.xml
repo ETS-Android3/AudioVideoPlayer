@@ -12,10 +12,10 @@
         <item>A Gif is added in the Audio UI to indicate the song which is currently getting played.</item>
         <item>User can control the playback of audio/video from notification or from the player activity.</item>
         <item>User has an option to change the layout of Video files list into single or double grid.</item>
-        <item>User can set sleep timer to terminate the application after the user defined time is elapsed.</item>
         <item>User has Seekbar option in the notification if the application runs on Android Version Q(10) or higher.</item>
         <item>User has Search functionality to search for a particular song or video using the title.</item>
         <item>User has an option to share video or audio files using third party applications.</item>
+        <item>User has option to refresh the UI when the application is launched initially. User has to swipe down to refresh</item>
         <item>If the user disconnects the bluetooth headsets/ buds during the media playback,the media playback will be paused.</item>
         <item>Moreover, as an additional feature if the user is listening to songs or watching videos in another application or if the user is attending to calls, then the media playback of this current application is paused and vice versa.</item>
         <item>If the user cancels the notification entire application gets terminated or can also be terminated using exit app option.</item>
