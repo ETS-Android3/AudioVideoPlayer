@@ -6,6 +6,7 @@
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi-v21/share.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/fullscreen_enter.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/fullscreen_exit.xml" value="0.1" />
+        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/list_view.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/next.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/pause.xml" value="0.1" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/drawable-anydpi/play.xml" value="0.1" />
@@ -21,6 +22,7 @@
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/audio_list.xml" value="0.3521594684385382" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/exo_controller_layout.xml" value="0.253125" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/fragment_audio.xml" value="0.12708333333333333" />
+        <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/layout_about.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/nav_header.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/layout/video_list.xml" value="0.25" />
         <entry key="..\:/Users/SRIVATSAN/AndroidStudioProjects/AudioVideoPlayer/app/src/main/res/menu/change_layout.xml" value="0.25" />

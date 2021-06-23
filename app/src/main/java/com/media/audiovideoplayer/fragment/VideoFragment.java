@@ -94,7 +94,8 @@ public class VideoFragment extends Fragment {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    videoPlayerAdapter.getFilter().filter(newText);
+                    if (null!= videoPlayerAdapter)
+                        videoPlayerAdapter.getFilter().filter(newText);
                     return true;
                 }
             });

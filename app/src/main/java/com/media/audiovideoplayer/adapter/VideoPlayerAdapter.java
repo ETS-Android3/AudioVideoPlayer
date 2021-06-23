@@ -101,6 +101,7 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            assert videoDataArrayList!=null;
             videoDataArrayList.clear();
             videoDataArrayList.addAll((ArrayList<VideoData>) filterResults.values);
             notifyDataSetChanged();

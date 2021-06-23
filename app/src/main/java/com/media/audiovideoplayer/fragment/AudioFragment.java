@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.adapter.AudioPlayerAdapter;
@@ -28,7 +27,6 @@ public class AudioFragment extends Fragment {
     private ArrayList<AudioData> audioModels;
     private AlphabetIndexFastScrollRecyclerView musicRecyclerView;
     private AudioPlayerAdapter audioPlayerAdapter;
-    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -37,7 +35,6 @@ public class AudioFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_audio, container, false);
         if (view != null) {
             musicRecyclerView = view.findViewById(R.id.music_list);
-            swipeRefreshLayout = view.findViewById(R.id.music_swipe_refresh);
             musicRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             ArrayList<AudioData> songsList = loadSongsFromInternalStorage();
             if (null != songsList) {
@@ -53,7 +50,7 @@ public class AudioFragment extends Fragment {
     }
 
     /**
-     * Method used for loading songs to internal storage
+     * Method used for loading songs from internal storage
      * @return
      */
 
