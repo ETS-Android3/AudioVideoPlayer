@@ -43,7 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 
-public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.AudioHolder> implements SectionIndexer,Filterable  {
+public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.AudioHolder> implements SectionIndexer  {
 
     public static ArrayList<AudioData> audioData;
     ArrayList<AudioData> audioDataAll;
@@ -139,39 +139,6 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
     public int getSectionForPosition(int position) {
         return 0;
     }
-
-    @Override
-    public Filter getFilter() {
-        return filter;
-    }
-    Filter filter = new Filter() {
-        @Override
-        protected FilterResults performFiltering(CharSequence charSequence) {
-            ArrayList<AudioData> filteredList = new ArrayList<>();
-            if (charSequence.toString().isEmpty()) {
-                filteredList.addAll(audioDataAll);
-            } else {
-                for (AudioData audio : audioDataAll) {
-                    if (audio.getMusicTitle().trim().toLowerCase().contains(charSequence.toString().toLowerCase())) {
-                        filteredList.add(audio);
-                    }
-                }
-            }
-            FilterResults filterResults = new FilterResults();
-            filterResults.values = filteredList;
-            filterResults.count = filteredList.size();
-            return filterResults;
-        }
-
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            assert audioData!=null;
-            audioData.clear();
-            audioData.addAll((ArrayList<AudioData>) filterResults.values);
-            notifyDataSetChanged();
-        }
-    };
-
 
     class AudioHolder extends RecyclerView.ViewHolder {
 

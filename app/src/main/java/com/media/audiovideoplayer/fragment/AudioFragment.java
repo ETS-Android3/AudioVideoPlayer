@@ -36,7 +36,6 @@ public class AudioFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -58,28 +57,6 @@ public class AudioFragment extends Fragment {
             }
         }
         return view;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.music_search_operation, menu);
-        MenuItem item = menu.findItem(R.id.music_search);
-        SearchView searchView = (SearchView) item.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (null != audioPlayerAdapter)
-                    audioPlayerAdapter.getFilter().filter(newText);
-                return false;
-            }
-        });
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     /**
