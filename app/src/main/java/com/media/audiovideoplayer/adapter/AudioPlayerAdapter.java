@@ -17,6 +17,8 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
@@ -32,16 +34,19 @@ import com.media.audiovideoplayer.R;
 import com.media.audiovideoplayer.activity.PlayerActivity;
 import com.media.audiovideoplayer.constants.AudioVideoConstants;
 import com.media.audiovideoplayer.datamodel.AudioData;
+import com.media.audiovideoplayer.datamodel.VideoData;
 import com.media.audiovideoplayer.service.PlayerService;
 import com.media.audiovideoplayer.sharedpreferences.Preferences;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 
-public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.AudioHolder> implements SectionIndexer {
+public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.AudioHolder> implements SectionIndexer,Filterable  {
 
     public static ArrayList<AudioData> audioData;
+    ArrayList<AudioData> audioDataAll;
     private final Activity av;
     private final Context context;
     private ArrayList<Integer> sectionsList;
@@ -50,6 +55,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
 
     public AudioPlayerAdapter(ArrayList<AudioData> audioDataArrayList, Activity activity, Context context) {
         audioData = audioDataArrayList;
+        this.audioDataAll = new ArrayList<>(audioData);
         this.context = context;
         this.av = activity;
         audioPlayerAdapter = this;
@@ -100,6 +106,7 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
         return audioData.size();
     }
 
+
     @Override
     public String[] getSections() {
         sectionsList = new ArrayList<>();
@@ -132,6 +139,38 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
     public int getSectionForPosition(int position) {
         return 0;
     }
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+    Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            ArrayList<AudioData> filteredList = new ArrayList<>();
+            if (charSequence.toString().isEmpty()) {
+                filteredList.addAll(audioDataAll);
+            } else {
+                for (AudioData audio : audioDataAll) {
+                    if (audio.getMusicTitle().trim().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                        filteredList.add(audio);
+                    }
+                }
+            }
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filteredList;
+            filterResults.count = filteredList.size();
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            assert audioData!=null;
+            audioData.clear();
+            audioData.addAll((ArrayList<AudioData>) filterResults.values);
+            notifyDataSetChanged();
+        }
+    };
 
 
     class AudioHolder extends RecyclerView.ViewHolder {
