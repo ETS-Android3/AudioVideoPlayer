@@ -219,8 +219,6 @@ public class PlayerActivity extends AppCompatActivity {
         if (fullscreen) {
             fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().hide();
             }
@@ -276,6 +274,8 @@ public class PlayerActivity extends AppCompatActivity {
             } else {
                 fullScreenButton.setImageResource(R.drawable.fullscreen_exit);
                 getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
                 if (getSupportActionBar() != null) {
                     getSupportActionBar().hide();
                 }
