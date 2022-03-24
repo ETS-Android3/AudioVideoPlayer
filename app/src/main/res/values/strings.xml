@@ -15,7 +15,7 @@
         <item>User has Seekbar option in the notification if the application runs on Android Version Q(10) or higher.</item>
         <item>User has Search functionality to search for a particular video using the title and for music user can search via alphabetic scroll view.</item>
         <item>User has an option to share video or audio files using third party applications.</item>
-        <item>User has option to refresh the UI when the application is launched initially. User has to swipe down to refresh</item>
+        <item>User has option to refresh the UI when the application is launched initially. User has to swipe down to refresh.</item>
         <item>If the user disconnects the bluetooth headsets/ buds during the media playback,the media playback will be paused.</item>
         <item>Moreover, as an additional feature if the user is listening to songs or watching videos in another application or if the user is attending to calls, then the media playback of this current application is paused and vice versa.</item>
         <item>If the user cancels the notification entire application gets terminated or can also be terminated using exit app option.</item>

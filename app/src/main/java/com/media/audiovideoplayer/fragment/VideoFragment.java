@@ -24,13 +24,14 @@ import com.media.audiovideoplayer.adapter.VideoPlayerAdapter;
 import com.media.audiovideoplayer.datamodel.VideoData;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class VideoFragment extends Fragment {
 
 
     private static RecyclerView videoPlayerRecyclerView;
     private VideoPlayerAdapter videoPlayerAdapter;
-    public  ArrayList<VideoData> videoDataArrayList;
+    public ArrayList<VideoData> videoDataArrayList;
     private boolean isGridViewChanged;
 
     @Override
@@ -50,9 +51,10 @@ public class VideoFragment extends Fragment {
             videoPlayerRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 1));
             ArrayList<VideoData> videoData = loadVideosFromInternalStorage();
             if (null != videoData) {
-                if (!videoData.isEmpty())
+                if (!videoData.isEmpty()) {
+                    Collections.sort(videoData);
                     videoPlayerAdapter = new VideoPlayerAdapter(videoData, getActivity(), getContext());
-                else
+                } else
                     Toast.makeText(getContext(), "No Video Files to be loaded", Toast.LENGTH_LONG).show();
                 videoPlayerRecyclerView.setAdapter(videoPlayerAdapter);
             }
@@ -94,7 +96,7 @@ public class VideoFragment extends Fragment {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    if (null!= videoPlayerAdapter)
+                    if (null != videoPlayerAdapter)
                         videoPlayerAdapter.getFilter().filter(newText);
                     return true;
                 }
@@ -108,6 +110,7 @@ public class VideoFragment extends Fragment {
      *
      * @return
      */
+
     public ArrayList<VideoData> loadVideosFromInternalStorage() {
         videoDataArrayList = new ArrayList<>();
         ContentResolver contentResolver = getContext().getContentResolver();

@@ -215,7 +215,6 @@ public class AudioPlayerAdapter extends RecyclerView.Adapter<AudioPlayerAdapter.
 
             @Override
             protected void onPostExecute(Uri bitmap) {
-                super.onPostExecute(bitmap);
                 Glide.with(context).load(bitmap).error(R.drawable.music_image).diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false).into(audioImageView);
             }
         }

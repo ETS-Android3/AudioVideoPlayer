@@ -154,7 +154,7 @@ public class VideoPlayerAdapter extends RecyclerView.Adapter<VideoPlayerAdapter.
         }
     }
 
-    public void resetAttributes() {
+    public static void resetAttributes() {
         exoPlayer.pause();
         isPaused = true;
         currentPosition = 0L;

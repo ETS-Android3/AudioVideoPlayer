@@ -1,6 +1,6 @@
 package com.media.audiovideoplayer.datamodel;
 
-public class VideoData {
+public class VideoData implements Comparable<VideoData> {
 
     private String title;
     private String displayName;
@@ -8,11 +8,11 @@ public class VideoData {
     private long duration;
 
 
-    public VideoData(String title, String displayName, String url,long duration) {
+    public VideoData(String title, String displayName, String url, long duration) {
         this.title = title;
         this.displayName = displayName;
         this.url = url;
-        this.duration=duration;
+        this.duration = duration;
     }
 
     public String getTitle() {
@@ -31,4 +31,9 @@ public class VideoData {
         return duration;
     }
 
+
+    @Override
+    public int compareTo(VideoData o) {
+        return this.title.compareTo(o.title);
+    }
 }

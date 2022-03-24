@@ -45,7 +45,6 @@ import java.util.concurrent.Executor;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "Permission";
     private static TabLayout tabLayout;
     private static ViewPager viewPager;
     public static SwipeRefreshLayout swipeRefreshLayout;
@@ -83,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         onNavigationItemClick();
         getFingerPrintStatus();
         swipeToRefresh();
+
     }
 
     /**
@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
 
     /**
      * To get the status whether storage permission is granted or not
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void swipeToRefresh() {
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            initiateTabs();
+            getFingerPrintStatus();
             swipeRefreshLayout.setRefreshing(false);
         });
 
@@ -358,5 +359,4 @@ public class MainActivity extends AppCompatActivity {
             moveTaskToBack(true);
         }
     }
-
 }
