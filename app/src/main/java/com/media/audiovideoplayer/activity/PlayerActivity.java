@@ -24,7 +24,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.TranslateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -142,7 +141,7 @@ public class PlayerActivity extends AppCompatActivity {
                 playerControl.setVisibility(View.VISIBLE);
                 playerControl.bringToFront();
                 relatedVideosLayout.setVisibility(View.VISIBLE);
-                Animation animation = AnimationUtils.loadAnimation(this, R.anim.emerge);
+                Animation animation = AnimationUtils.loadAnimation(this, R.anim.pop_up);
                 relatedVideosLayout.startAnimation(animation);
                 isTouched = true;
                 playerControlView.show();
@@ -150,7 +149,7 @@ public class PlayerActivity extends AppCompatActivity {
                 handler.postDelayed(() -> {
                             if (isTouched) {
                                 playerControl.setVisibility(View.INVISIBLE);
-                                Animation down = AnimationUtils.loadAnimation(this, R.anim.diminish);
+                                Animation down = AnimationUtils.loadAnimation(this, R.anim.pop_down);
                                 relatedVideosLayout.startAnimation(down);
                                 down.setAnimationListener(new Animation.AnimationListener() {
 
